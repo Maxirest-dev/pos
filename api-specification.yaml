@@ -1,0 +1,1009 @@
+openapi: 3.0.3
+info:
+  title: Maxirest POS - API REST
+  description: |
+    API del modulo Punto de Venta (POS) del sistema Maxirest Online.
+
+    Gestiona autenticacion por PIN, turnos de caja, mesas, pedidos, cobros y arqueo.
+
+    ## Autenticacion
+    - Login por PIN de 6 digitos (no usuario/password tradicional)
+    - JWT Bearer token en header Authorization
+    - Multi-tenancy via header X-Tenant-ID
+    - Maximo 3 intentos fallidos antes de bloqueo automatico
+
+    ## Tipos de usuario POS
+    - MOZO: toma pedidos, asigna mesas
+    - CAJERO: abre/cierra turnos, cobra, realiza arqueo
+    - COCINERO: visualiza pedidos en cocina (read-only)
+
+    ## Turnos
+    - MANANA: 08:00 - 14:00
+    - TARDE: 14:00 - 22:00
+    - NOCHE: 22:00 - 08:00
+  version: 1.0.0
+  contact:
+    name: Maxirest Dev
+    url: https://github.com/Maxirest-dev
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Desarrollo local
+  - url: https://pos-backend-{tenant}.run.app/api/v1
+    description: Cloud Run (GCP)
+    variables:
+      tenant:
+        default: demo
+
+tags:
+  - name: Auth
+    description: Autenticacion por PIN y gestion de sesiones POS
+  - name: Usuarios
+    description: Usuarios habilitados para el punto de venta
+  - name: Turnos
+    description: Apertura, cierre e historial de turnos de caja
+  - name: Mesas
+    description: Gestion de mesas y sus estados
+  - name: Pedidos
+    description: Creacion y gestion de pedidos (futuro)
+  - name: Cobros
+    description: Registro de cobros y formas de pago (futuro)
+
+# ---------------------------------------------------------------------------
+# Security
+# ---------------------------------------------------------------------------
+security:
+  - bearerAuth: []
+    tenantHeader: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token JWT obtenido via POST /auth/login
+    tenantHeader:
+      type: apiKey
+      in: header
+      name: X-Tenant-ID
+      description: Identificador del tenant (schema MySQL)
+
+  # =========================================================================
+  # Parameters
+  # =========================================================================
+  parameters:
+    PathId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: UUID del recurso
+
+    PageParam:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+      description: Numero de pagina (0-based)
+
+    SizeParam:
+      name: size
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+      description: Cantidad de elementos por pagina
+
+    SortParam:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        example: createdAt,desc
+      description: Campo y direccion de ordenamiento
+
+  # =========================================================================
+  # Schemas
+  # =========================================================================
+  schemas:
+    # --- Generic -----------------------------------------------------------
+    ApiError:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-04-01T14:30:00Z"
+        status:
+          type: integer
+          example: 400
+        error:
+          type: string
+          example: Bad Request
+        message:
+          type: string
+          example: PIN invalido
+        path:
+          type: string
+          example: /api/v1/auth/login
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldError'
+
+    FieldError:
+      type: object
+      properties:
+        field:
+          type: string
+          example: pin
+        message:
+          type: string
+          example: El PIN debe tener 6 digitos
+
+    PageMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 0
+        size:
+          type: integer
+          example: 20
+        totalElements:
+          type: integer
+          format: int64
+          example: 42
+        totalPages:
+          type: integer
+          example: 3
+
+    # --- Enums -------------------------------------------------------------
+    TipoUsuarioPOS:
+      type: string
+      enum: [MOZO, CAJERO, COCINERO]
+
+    TipoTurno:
+      type: string
+      enum: [MANANA, TARDE, NOCHE]
+
+    EstadoTurno:
+      type: string
+      enum: [ABIERTO, CERRADO]
+
+    EstadoMesa:
+      type: string
+      enum: [LIBRE, OCUPADA, RESERVADA, CUENTA_PEDIDA, FUERA_DE_SERVICIO]
+
+    EstadoPedido:
+      type: string
+      enum: [ABIERTO, EN_PREPARACION, LISTO, ENTREGADO, COBRADO, CANCELADO]
+
+    FormaCobro:
+      type: string
+      enum: [EFECTIVO, TARJETA_DEBITO, TARJETA_CREDITO, QR, CUENTA_CORRIENTE]
+
+    # --- Auth --------------------------------------------------------------
+    LoginRequest:
+      type: object
+      required: [pin]
+      properties:
+        pin:
+          type: string
+          pattern: '^\d{6}$'
+          example: "142536"
+          description: PIN de 6 digitos
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT Bearer token
+          example: eyJhbGciOiJIUzI1NiJ9...
+        usuario:
+          $ref: '#/components/schemas/UsuarioResponse'
+        turnoActivo:
+          $ref: '#/components/schemas/TurnoResponse'
+          description: Turno abierto actualmente (null si no hay)
+
+    # --- Usuarios ----------------------------------------------------------
+    UsuarioResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+          example: Juan Martinez
+        tipo:
+          $ref: '#/components/schemas/TipoUsuarioPOS'
+        avatarEmoji:
+          type: string
+          example: "\U0001F468\u200D\U0001F373"
+        bloqueado:
+          type: boolean
+          example: false
+        activo:
+          type: boolean
+          example: true
+
+    UsuarioListResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/UsuarioResponse'
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+
+    # --- Turnos ------------------------------------------------------------
+    TurnoAbrirRequest:
+      type: object
+      required: [tipoTurno, montoApertura]
+      properties:
+        tipoTurno:
+          $ref: '#/components/schemas/TipoTurno'
+        montoApertura:
+          type: number
+          format: double
+          minimum: 0
+          example: 15000.00
+          description: Monto en caja al abrir el turno
+
+    TurnoCerrarRequest:
+      type: object
+      required: [montoCierre]
+      properties:
+        montoCierre:
+          type: number
+          format: double
+          minimum: 0
+          example: 48500.00
+          description: Monto contado en caja al cerrar
+        observaciones:
+          type: string
+          maxLength: 500
+          example: Faltante de $200 en efectivo
+
+    TurnoResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        fecha:
+          type: string
+          format: date
+          example: "2026-04-01"
+        tipoTurno:
+          $ref: '#/components/schemas/TipoTurno'
+        estado:
+          $ref: '#/components/schemas/EstadoTurno'
+        usuarioApertura:
+          $ref: '#/components/schemas/UsuarioResponse'
+        usuarioCierre:
+          $ref: '#/components/schemas/UsuarioResponse'
+        horaApertura:
+          type: string
+          format: date-time
+        horaCierre:
+          type: string
+          format: date-time
+        montoApertura:
+          type: number
+          format: double
+        montoCierre:
+          type: number
+          format: double
+        diferencia:
+          type: number
+          format: double
+          description: montoCierre - montoApertura - totalCobrosEfectivo
+        observaciones:
+          type: string
+        activo:
+          type: boolean
+
+    TurnoListResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/TurnoResponse'
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+
+    # --- Mesas -------------------------------------------------------------
+    MesaResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        numero:
+          type: integer
+          example: 5
+        capacidad:
+          type: integer
+          example: 4
+        estado:
+          $ref: '#/components/schemas/EstadoMesa'
+        zona:
+          type: string
+          example: Salon principal
+        pedidoActivo:
+          type: string
+          format: uuid
+          description: ID del pedido abierto en esta mesa (null si libre)
+        activo:
+          type: boolean
+
+    MesaEstadoRequest:
+      type: object
+      required: [estado]
+      properties:
+        estado:
+          $ref: '#/components/schemas/EstadoMesa'
+
+    # --- Pedidos (futuro) --------------------------------------------------
+    PedidoCreateRequest:
+      type: object
+      required: [mesaId, items]
+      properties:
+        mesaId:
+          type: string
+          format: uuid
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/PedidoItemCreateRequest'
+        observaciones:
+          type: string
+          maxLength: 500
+
+    PedidoItemCreateRequest:
+      type: object
+      required: [articuloId, cantidad]
+      properties:
+        articuloId:
+          type: string
+          format: uuid
+        cantidad:
+          type: integer
+          minimum: 1
+          example: 2
+        precioUnitario:
+          type: number
+          format: double
+          description: Si no se envia, se toma el precio vigente del articulo
+        notas:
+          type: string
+          maxLength: 200
+          example: Sin sal
+
+    PedidoUpdateRequest:
+      type: object
+      properties:
+        estado:
+          $ref: '#/components/schemas/EstadoPedido'
+        observaciones:
+          type: string
+          maxLength: 500
+
+    PedidoItemResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        articuloId:
+          type: string
+          format: uuid
+        articuloNombre:
+          type: string
+          example: Milanesa napolitana
+        cantidad:
+          type: integer
+        precioUnitario:
+          type: number
+          format: double
+        subtotal:
+          type: number
+          format: double
+        notas:
+          type: string
+
+    PedidoResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        mesaId:
+          type: string
+          format: uuid
+        mesaNumero:
+          type: integer
+        turnoId:
+          type: string
+          format: uuid
+        usuario:
+          $ref: '#/components/schemas/UsuarioResponse'
+        estado:
+          $ref: '#/components/schemas/EstadoPedido'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PedidoItemResponse'
+        subtotal:
+          type: number
+          format: double
+        descuento:
+          type: number
+          format: double
+        total:
+          type: number
+          format: double
+        observaciones:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        activo:
+          type: boolean
+
+    PedidoListResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/PedidoResponse'
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+
+    # --- Cobros (futuro) ---------------------------------------------------
+    CobroCreateRequest:
+      type: object
+      required: [pedidoId, formaCobro, monto]
+      properties:
+        pedidoId:
+          type: string
+          format: uuid
+        formaCobro:
+          $ref: '#/components/schemas/FormaCobro'
+        monto:
+          type: number
+          format: double
+          minimum: 0.01
+          example: 5400.00
+        referencia:
+          type: string
+          maxLength: 100
+          description: Numero de operacion, voucher, etc.
+          example: "OP-784512"
+
+    CobroResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        pedidoId:
+          type: string
+          format: uuid
+        formaCobro:
+          $ref: '#/components/schemas/FormaCobro'
+        monto:
+          type: number
+          format: double
+        referencia:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        creadoPor:
+          $ref: '#/components/schemas/UsuarioResponse'
+
+    CobroListResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/CobroResponse'
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+
+# ===========================================================================
+# Paths
+# ===========================================================================
+paths:
+  # -------------------------------------------------------------------------
+  # Auth
+  # -------------------------------------------------------------------------
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login por PIN
+      description: |
+        Autentica un usuario POS mediante su PIN de 6 digitos.
+        Retorna JWT token, datos del usuario y turno activo si existe.
+        Despues de 3 intentos fallidos, el usuario queda bloqueado.
+      security: []
+      parameters:
+        - name: X-Tenant-ID
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: PIN invalido o formato incorrecto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Usuario bloqueado por intentos fallidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Cerrar sesion POS
+      description: Invalida el token JWT actual.
+      responses:
+        '204':
+          description: Sesion cerrada exitosamente
+        '401':
+          description: Token invalido o expirado
+
+  # -------------------------------------------------------------------------
+  # Usuarios
+  # -------------------------------------------------------------------------
+  /usuarios:
+    get:
+      tags: [Usuarios]
+      summary: Listar usuarios POS
+      description: Retorna usuarios habilitados para el punto de venta, con paginacion.
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/SizeParam'
+        - $ref: '#/components/parameters/SortParam'
+        - name: tipo
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/TipoUsuarioPOS'
+          description: Filtrar por tipo de usuario
+        - name: activo
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Filtrar por estado activo/inactivo
+      responses:
+        '200':
+          description: Lista paginada de usuarios POS
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioListResponse'
+
+  /usuarios/{id}:
+    get:
+      tags: [Usuarios]
+      summary: Obtener usuario POS por ID
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '200':
+          description: Detalle del usuario POS
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioResponse'
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  # -------------------------------------------------------------------------
+  # Turnos
+  # -------------------------------------------------------------------------
+  /turnos/abrir:
+    post:
+      tags: [Turnos]
+      summary: Abrir un turno de caja
+      description: |
+        Abre un nuevo turno. Solo usuarios con tipo CAJERO pueden abrir turnos.
+        No se permite abrir un turno si ya existe uno abierto.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TurnoAbrirRequest'
+      responses:
+        '201':
+          description: Turno abierto exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TurnoResponse'
+        '400':
+          description: Ya existe un turno abierto o datos invalidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Usuario no autorizado (no es CAJERO)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /turnos/cerrar:
+    post:
+      tags: [Turnos]
+      summary: Cerrar el turno activo
+      description: |
+        Cierra el turno abierto. Registra monto de cierre y calcula diferencia.
+        Requiere que no haya pedidos abiertos sin cobrar.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TurnoCerrarRequest'
+      responses:
+        '200':
+          description: Turno cerrado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TurnoResponse'
+        '400':
+          description: No hay turno abierto o existen pedidos sin cobrar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /turnos/activo:
+    get:
+      tags: [Turnos]
+      summary: Obtener turno activo
+      description: Retorna el turno actualmente abierto, o 404 si no hay ninguno.
+      responses:
+        '200':
+          description: Turno activo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TurnoResponse'
+        '404':
+          description: No hay turno abierto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /turnos:
+    get:
+      tags: [Turnos]
+      summary: Historial de turnos
+      description: Lista paginada de turnos, ordenada por fecha descendente.
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/SizeParam'
+        - $ref: '#/components/parameters/SortParam'
+        - name: fecha
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Filtrar por fecha exacta
+        - name: tipoTurno
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/TipoTurno'
+        - name: estado
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/EstadoTurno'
+      responses:
+        '200':
+          description: Lista paginada de turnos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TurnoListResponse'
+
+  # -------------------------------------------------------------------------
+  # Mesas
+  # -------------------------------------------------------------------------
+  /mesas:
+    get:
+      tags: [Mesas]
+      summary: Listar mesas
+      description: Retorna todas las mesas con su estado actual y pedido activo.
+      parameters:
+        - name: estado
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/EstadoMesa'
+          description: Filtrar por estado de mesa
+        - name: zona
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filtrar por zona
+      responses:
+        '200':
+          description: Lista de mesas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MesaResponse'
+
+  /mesas/{id}/estado:
+    put:
+      tags: [Mesas]
+      summary: Cambiar estado de mesa
+      description: |
+        Actualiza el estado de una mesa. Transiciones validas:
+        - LIBRE -> OCUPADA, RESERVADA, FUERA_DE_SERVICIO
+        - OCUPADA -> CUENTA_PEDIDA, LIBRE (si se cancela pedido)
+        - CUENTA_PEDIDA -> LIBRE (despues de cobrar)
+        - RESERVADA -> OCUPADA, LIBRE
+        - FUERA_DE_SERVICIO -> LIBRE
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MesaEstadoRequest'
+      responses:
+        '200':
+          description: Estado actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MesaResponse'
+        '400':
+          description: Transicion de estado invalida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Mesa no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  # -------------------------------------------------------------------------
+  # Pedidos (futuro)
+  # -------------------------------------------------------------------------
+  /pedidos:
+    get:
+      tags: [Pedidos]
+      summary: Listar pedidos
+      description: Lista paginada de pedidos del turno activo o historicos.
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/SizeParam'
+        - $ref: '#/components/parameters/SortParam'
+        - name: turnoId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Filtrar por turno
+        - name: estado
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/EstadoPedido'
+        - name: mesaId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Lista paginada de pedidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PedidoListResponse'
+
+    post:
+      tags: [Pedidos]
+      summary: Crear pedido
+      description: |
+        Crea un nuevo pedido para una mesa. Requiere turno abierto.
+        La mesa pasa automaticamente a estado OCUPADA.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PedidoCreateRequest'
+      responses:
+        '201':
+          description: Pedido creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PedidoResponse'
+        '400':
+          description: No hay turno abierto, mesa ocupada, o datos invalidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /pedidos/{id}:
+    get:
+      tags: [Pedidos]
+      summary: Obtener pedido por ID
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '200':
+          description: Detalle del pedido con items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PedidoResponse'
+        '404':
+          description: Pedido no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+    put:
+      tags: [Pedidos]
+      summary: Actualizar estado de pedido
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PedidoUpdateRequest'
+      responses:
+        '200':
+          description: Pedido actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PedidoResponse'
+        '400':
+          description: Transicion de estado invalida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Pedido no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  # -------------------------------------------------------------------------
+  # Cobros (futuro)
+  # -------------------------------------------------------------------------
+  /cobros:
+    post:
+      tags: [Cobros]
+      summary: Registrar cobro
+      description: |
+        Registra un cobro contra un pedido. Permite cobros parciales y
+        multiples formas de pago para un mismo pedido.
+        Cuando el total cobrado iguala al total del pedido, este pasa a COBRADO
+        y la mesa se libera automaticamente.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CobroCreateRequest'
+      responses:
+        '201':
+          description: Cobro registrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CobroResponse'
+        '400':
+          description: Monto excede deuda o pedido ya cobrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+    get:
+      tags: [Cobros]
+      summary: Listar cobros
+      description: Lista de cobros con filtros opcionales.
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/SizeParam'
+        - $ref: '#/components/parameters/SortParam'
+        - name: pedidoId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: formaCobro
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/FormaCobro'
+        - name: turnoId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Cobros del turno (via pedido.turno_id)
+      responses:
+        '200':
+          description: Lista paginada de cobros
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CobroListResponse'
