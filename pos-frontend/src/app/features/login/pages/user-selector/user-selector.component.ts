@@ -12,8 +12,7 @@ import { PosUser } from '../../../../core/models';
   template: `
     <div class="user-selector">
       <div class="user-selector__logo">
-        <span class="logo-icon">m</span>
-        <span class="logo-text">maxirest</span>
+        <img src="/logo.png" alt="Maxirest" class="logo-img" />
       </div>
 
       <h1 class="user-selector__title">¿Quién anda ahí?</h1>
@@ -66,6 +65,7 @@ import { PosUser } from '../../../../core/models';
       min-height: 100dvh;
       padding: 24px;
       gap: 28px;
+      background: linear-gradient(135deg, #01033E 0%, #0A0E4A 50%, #01033E 100%);
     }
     .user-selector__logo {
       position: absolute;
@@ -75,22 +75,10 @@ import { PosUser } from '../../../../core/models';
       align-items: center;
       gap: 8px;
     }
-    .logo-icon {
-      width: 32px;
+    .logo-img {
       height: 32px;
-      background: #F27920;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-weight: 700;
-      font-size: 18px;
-    }
-    .logo-text {
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 16px;
-      font-weight: 600;
+      width: auto;
+      object-fit: contain;
     }
     .user-selector__title {
       color: #fff;

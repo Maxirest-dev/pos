@@ -1,8 +1,9 @@
-import { Component, signal, computed, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, signal, computed, inject, HostListener, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { NumericKeypadComponent } from '../../../../shared/components/numeric-keypad/numeric-keypad.component';
 import { PinInputComponent } from '../../../../shared/components/pin-input/pin-input.component';
 import { AuthService } from '../../../../core/services/auth.service';
+import { MOCK_PIN } from '../../data/mock-users.data';
 
 @Component({
   selector: 'app-pin-entry',
@@ -12,8 +13,7 @@ import { AuthService } from '../../../../core/services/auth.service';
   template: `
     <div class="pin-entry">
       <div class="pin-entry__logo">
-        <span class="logo-icon">m</span>
-        <span class="logo-text">maxirest</span>
+        <img src="/logo.png" alt="Maxirest" class="logo-img" />
       </div>
 
       <button class="pin-entry__back" (click)="goBack()">
@@ -50,6 +50,8 @@ import { AuthService } from '../../../../core/services/auth.service';
         <span class="forgot-label">¿Olvidaste tu PIN?</span>
         <button class="forgot-link">Recuperar acceso</button>
       </div>
+
+      <p class="pin-entry__hint">PIN de prueba: {{ mockPin }}</p>
     </div>
   `,
   styles: [`
@@ -63,6 +65,7 @@ import { AuthService } from '../../../../core/services/auth.service';
       padding: 24px;
       gap: 20px;
       position: relative;
+      background: linear-gradient(135deg, #01033E 0%, #0A0E4A 50%, #01033E 100%);
     }
     .pin-entry__logo {
       position: absolute;
@@ -72,22 +75,10 @@ import { AuthService } from '../../../../core/services/auth.service';
       align-items: center;
       gap: 8px;
     }
-    .logo-icon {
-      width: 32px;
+    .logo-img {
       height: 32px;
-      background: #F27920;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-weight: 700;
-      font-size: 18px;
-    }
-    .logo-text {
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 16px;
-      font-weight: 600;
+      width: auto;
+      object-fit: contain;
     }
     .pin-entry__back {
       position: absolute;
@@ -182,6 +173,11 @@ import { AuthService } from '../../../../core/services/auth.service';
     .forgot-link:hover {
       text-decoration: underline;
     }
+    .pin-entry__hint {
+      color: rgba(255, 255, 255, 0.25);
+      font-size: 12px;
+      margin: 0;
+    }
 
     @media (max-width: 600px) {
       .pin-entry__back {
@@ -201,6 +197,22 @@ export class PinEntryComponent {
   readonly errorMessage = this.authService.loginError;
   readonly hasError = computed(() => this.errorMessage() !== '');
   readonly isBlocked = computed(() => this.user()?.bloqueado ?? false);
+  readonly mockPin = MOCK_PIN;
+
+  @HostListener('document:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent): void {
+    if (this.isBlocked()) return;
+
+    if (event.key >= '0' && event.key <= '9') {
+      this.onKeyPress(event.key);
+    } else if (event.key === 'Backspace') {
+      this.onKeyPress('delete');
+    } else if (event.key === 'Enter') {
+      this.verify();
+    } else if (event.key === 'Escape') {
+      this.goBack();
+    }
+  }
 
   onKeyPress(key: string): void {
     if (this.isBlocked()) return;
@@ -217,7 +229,7 @@ export class PinEntryComponent {
 
     const valid = this.authService.validatePin(this.pin());
     if (valid) {
-      this.router.navigate(['/login/turno']);
+      this.router.navigate(['/login/confirmar']);
     } else {
       this.pin.set('');
     }

@@ -11,8 +11,7 @@ import { ShiftType, SHIFT_OPTIONS } from '../../../../core/models';
   template: `
     <div class="shift-selector">
       <div class="shift-selector__logo">
-        <span class="logo-icon">m</span>
-        <span class="logo-text">maxirest</span>
+        <img src="/logo.png" alt="Maxirest" class="logo-img" />
       </div>
 
       <div class="shift-selector__card">
@@ -93,22 +92,10 @@ import { ShiftType, SHIFT_OPTIONS } from '../../../../core/models';
       align-items: center;
       gap: 8px;
     }
-    .logo-icon {
-      width: 32px;
+    .logo-img {
       height: 32px;
-      background: #F27920;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-weight: 700;
-      font-size: 18px;
-    }
-    .logo-text {
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 16px;
-      font-weight: 600;
+      width: auto;
+      object-fit: contain;
     }
     .shift-selector__card {
       background: #fff;

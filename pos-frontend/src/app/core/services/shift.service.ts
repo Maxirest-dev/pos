@@ -5,7 +5,7 @@ import { Shift, ShiftType, SHIFT_OPTIONS } from '../models';
 export class ShiftService {
   private readonly _activeShift = signal<Shift | null>(null);
   private readonly _selectedDate = signal<Date>(new Date());
-  private readonly _selectedShiftType = signal<ShiftType | null>(null);
+  private readonly _selectedShiftType = signal<ShiftType | null>(this.detectCurrentShift());
 
   readonly activeShift = this._activeShift.asReadonly();
   readonly selectedDate = this._selectedDate.asReadonly();
@@ -31,7 +31,7 @@ export class ShiftService {
     const option = SHIFT_OPTIONS.find(s => s.tipo === tipo)!;
 
     const shift: Shift = {
-      id: crypto.randomUUID(),
+      id: crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2),
       fecha: date.toISOString().split('T')[0],
       tipo,
       usuarioAperturaId: userId,
@@ -60,6 +60,13 @@ export class ShiftService {
 
   reset(): void {
     this._selectedDate.set(new Date());
-    this._selectedShiftType.set(null);
+    this._selectedShiftType.set(this.detectCurrentShift());
+  }
+
+  private detectCurrentShift(): ShiftType {
+    const hour = new Date().getHours();
+    if (hour >= 8 && hour < 14) return 'MANANA';
+    if (hour >= 14 && hour < 22) return 'TARDE';
+    return 'NOCHE';
   }
 }
