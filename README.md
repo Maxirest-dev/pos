@@ -59,3 +59,16 @@ Un solo turno abierto a la vez. Un usuario abre y otro (o el mismo) cierra para 
 ## Repositorio
 
 Organización: [Maxirest-dev](https://github.com/Maxirest-dev)
+
+---
+
+## 📝 Últimos cambios
+
+### 2026-04-05
+
+**Commits incluidos:**
+- b8852a0 feat: agregar filtros y buscador en card pedidos activos
+
+**Archivos modificados:**
+  - `otros`: .gitignore
+  - `.ts`: active-orders.component.ts, mesa-grid.component.ts
