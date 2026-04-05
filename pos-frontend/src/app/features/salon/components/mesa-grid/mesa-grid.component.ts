@@ -75,12 +75,19 @@ import { MesaCardComponent } from '../mesa-card/mesa-card.component';
     </div>
   `,
   styles: [`
+    :host {
+      display: flex;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+    }
     .mesa-grid {
       display: flex;
       flex-direction: column;
       flex: 1;
       min-width: 0;
       padding: 16px 24px 10px 14px;
+      overflow: hidden;
     }
     /* Top bar */
     .mesa-grid__topbar {
