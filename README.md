@@ -64,11 +64,11 @@ Organización: [Maxirest-dev](https://github.com/Maxirest-dev)
 
 ## 📝 Últimos cambios
 
-### 2026-04-05
+### 2026-04-22
 
 **Commits incluidos:**
-- b8852a0 feat: agregar filtros y buscador en card pedidos activos
+- e58e638 feat: rediseño salón/mesa, swap canal-plano drag&drop, edición in-place
 
 **Archivos modificados:**
-  - `otros`: .gitignore
-  - `.ts`: active-orders.component.ts, mesa-grid.component.ts
+  - `.json`: angular.json
+  - `.ts`: mock-users.data.ts, pin-entry.component.ts, cliente-dialog.component.ts, pedido-list.component.ts, mesa.component.ts, active-orders.component.ts, channel-main.component.ts, mesa-card.component.ts, mesa-grid.component.ts, order-channel.component.ts, plano-item.component.ts, pos-header.component.ts, salon-reduced.component.ts, mock-salon.data.ts, salon.model.ts, salon.component.ts, salon-layout.service.ts, session-plano.service.ts, pin-input.component.ts
