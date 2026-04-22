@@ -30,39 +30,44 @@ const MOZOS_MOCK = ['Andrea', 'Marcos', 'Lucas', 'Lucía', 'Federico'];
         [class.mesa--disponible]="mesa().estado === 'DISPONIBLE'"
         [class.mesa--ocupada]="mesa().estado === 'OCUPADA'"
         [class.mesa--reservada]="mesa().estado === 'RESERVADA'"
+        [class.mesa--circular]="mesa().forma === 'circular'"
+        [class.mesa--pequeno]="mesa().tamano === 'pequeno'"
         (click)="mesaClick.emit(mesa())"
       >
-        <div class="mesa__header">
+        <div class="mesa__top">
           <span class="mesa__capacidad">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
             </svg>
-            {{ mesa().capacidad }}
+            {{ mesa().comensales ?? mesa().capacidad }}
           </span>
-          <span class="mesa__numero">{{ mesa().numero }}</span>
+          @if (mesa().estado === 'OCUPADA' && mesa().minutosOcupada) {
+            <span class="mesa__tiempo">{{ mesa().minutosOcupada }}'</span>
+          }
         </div>
 
-        @if (mesa().estado === 'OCUPADA') {
-          <div class="mesa__info">
-            <span class="mesa__comensales">{{ mesa().comensales }} comensales</span>
-            @if (mesa().minutosOcupada) {
-              <span class="mesa__tiempo">{{ mesa().minutosOcupada }} min</span>
-            }
-            @if (mesa().montoActual) {
-              <span class="mesa__monto">{{ mesa().montoActual | number:'1.0-0' }}</span>
-            }
-          </div>
-        }
+        <div class="mesa__center">
+          <span class="mesa__numero">{{ mesa().numero }}</span>
+          @if (mesa().estado === 'OCUPADA' && mesa().montoActual) {
+            <span class="mesa__monto mesa__monto--inline">\${{ mesa().montoActual | number:'1.0-0' }}</span>
+          } @else if (mesa().estado === 'RESERVADA') {
+            <span class="mesa__reserva mesa__reserva--inline">Reservada</span>
+          }
+        </div>
 
-        @if (mesa().estado === 'RESERVADA') {
-          <div class="mesa__info">
+        <div class="mesa__bot">
+          @if (mesa().estado === 'OCUPADA' && mesa().montoActual) {
+            <span class="mesa__monto">\${{ mesa().montoActual | number:'1.0-0' }}</span>
+          } @else if (mesa().estado === 'RESERVADA') {
             <span class="mesa__reserva">Reservada</span>
-          </div>
-        }
+          }
+        </div>
       </button>
 
       @if (showTooltip() && mesa().estado === 'OCUPADA') {
-        <div class="tooltip" [style.top.px]="tooltipY()" [style.left.px]="tooltipX()">
+        <div class="tooltip"
+          [class.tooltip--below]="tooltipBelow()"
+          [style.top.px]="tooltipY()" [style.left.px]="tooltipX()">
           <div class="tooltip__header">
             <span class="tooltip__mesa">Mesa {{ mesa().numero }}</span>
             <span class="tooltip__tiempo">{{ mesa().minutosOcupada }}'</span>
@@ -99,6 +104,9 @@ const MOZOS_MOCK = ['Andrea', 'Marcos', 'Lucas', 'Lucía', 'Federico'];
       position: relative;
       width: 100%;
       height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .mesa {
       width: 100%;
@@ -106,14 +114,26 @@ const MOZOS_MOCK = ['Andrea', 'Marcos', 'Lucas', 'Lucía', 'Federico'];
       border-radius: 12px;
       border: 2px solid;
       cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      padding: 10px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      padding: 8px 10px;
       font-family: inherit;
       transition: transform 0.12s, box-shadow 0.12s;
       min-width: 0;
-      min-height: 80px;
+      min-height: 60px;
       overflow: hidden;
+    }
+    .mesa--circular {
+      border-radius: 50%;
+      aspect-ratio: 1 / 1;
+      padding: 8px 10px;
+    }
+    .mesa--pequeno {
+      width: 72%;
+      height: 72%;
+    }
+    .mesa--pequeno.mesa--circular {
+      padding: 4px 6px;
     }
     .mesa:hover {
       transform: scale(1.03);
@@ -123,14 +143,88 @@ const MOZOS_MOCK = ['Andrea', 'Marcos', 'Lucas', 'Lucía', 'Federico'];
     .mesa--disponible { background: #D1FAE5; border-color: #34D399; color: #065F46; }
     .mesa--ocupada { background: #FEE2E2; border-color: #F87171; color: #991B1B; }
     .mesa--reservada { background: #FEF3C7; border-color: #FBBF24; color: #92400E; }
-    .mesa__header { display: flex; align-items: flex-start; justify-content: space-between; }
-    .mesa__capacidad { display: flex; align-items: center; gap: 2px; font-size: 10px; font-weight: 500; opacity: 0.7; }
-    .mesa__numero { font-size: 22px; font-weight: 800; line-height: 1; }
-    .mesa__info { display: flex; flex-direction: column; gap: 1px; margin-top: auto; max-width: 100%; }
-    .mesa__comensales { font-size: 9px; font-weight: 500; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .mesa__tiempo { font-size: 9px; font-weight: 700; }
-    .mesa__monto { font-size: 10px; font-weight: 700; }
-    .mesa__reserva { font-size: 9px; font-weight: 600; }
+
+    .mesa__top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      min-height: 12px;
+    }
+    .mesa__capacidad {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 10px;
+      font-weight: 600;
+      opacity: 0.75;
+    }
+    .mesa__tiempo {
+      font-size: 10px;
+      font-weight: 700;
+      opacity: 0.85;
+    }
+
+    .mesa__center {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+    }
+    .mesa__numero {
+      font-size: 24px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .mesa__bot {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 12px;
+    }
+    .mesa__monto { font-size: 11px; font-weight: 700; }
+    .mesa__reserva { font-size: 10px; font-weight: 600; opacity: 0.85; }
+
+    /* En mesas pequenas achicamos tipografía */
+    .mesa--pequeno .mesa__numero { font-size: 18px; }
+    .mesa--pequeno .mesa__capacidad,
+    .mesa--pequeno .mesa__tiempo,
+    .mesa--pequeno .mesa__monto,
+    .mesa--pequeno .mesa__reserva { font-size: 9px; }
+
+    /* === Layout alternativo para mesas circulares ===
+       Comensales centrados arriba, número + monto en stack vertical al centro,
+       tiempo oculto, bot vacío. */
+    .mesa__monto--inline,
+    .mesa__reserva--inline { display: none; }
+
+    .mesa--circular {
+      padding: 6px 8px;
+      grid-template-rows: auto 1fr;   /* sin fila bot en circular */
+    }
+    .mesa--circular.mesa--pequeno { padding: 4px 6px; }
+    .mesa--circular .mesa__top { justify-content: center; min-height: 10px; }
+    .mesa--circular .mesa__tiempo { display: none; }
+    .mesa--circular .mesa__bot { display: none; }
+    .mesa--circular .mesa__center {
+      flex-direction: column;
+      gap: 0;
+      line-height: 1;
+    }
+    .mesa--circular .mesa__monto--inline,
+    .mesa--circular .mesa__reserva--inline {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-top: 2px;
+      white-space: nowrap;
+    }
+    .mesa--circular .mesa__numero { font-size: 20px; line-height: 1; }
+    .mesa--circular.mesa--pequeno .mesa__numero { font-size: 15px; }
+    .mesa--circular.mesa--pequeno .mesa__monto--inline,
+    .mesa--circular.mesa--pequeno .mesa__reserva--inline { font-size: 8px; }
 
     /* Tooltip */
     .tooltip {
@@ -146,6 +240,7 @@ const MOZOS_MOCK = ['Andrea', 'Marcos', 'Lucas', 'Lucía', 'Federico'];
       animation: fadeIn 0.12s ease-out;
       pointer-events: none;
     }
+    .tooltip--below { transform: none; }
     .tooltip__header {
       display: flex;
       justify-content: space-between;
@@ -183,6 +278,7 @@ export class MesaCardComponent {
   readonly showTooltip = signal(false);
   readonly tooltipX = signal(0);
   readonly tooltipY = signal(0);
+  readonly tooltipBelow = signal(false);
 
   platos: PlatoMock[] = [];
   cliente = '';
@@ -191,8 +287,14 @@ export class MesaCardComponent {
   onHover(event: MouseEvent): void {
     if (this.mesa().estado !== 'OCUPADA') return;
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const estimatedHeight = 260;     // alto aproximado del tooltip
+    const spaceAbove = rect.top;
+    const flipBelow = spaceAbove < estimatedHeight + 16;
+
     this.tooltipX.set(rect.left + rect.width / 2 - 100);
-    this.tooltipY.set(rect.top - 8);
+    this.tooltipY.set(flipBelow ? rect.bottom + 8 : rect.top - 8);
+    this.tooltipBelow.set(flipBelow);
+
     const idx = (this.mesa().numero - 1) % PLATOS_MOCK.length;
     this.platos = PLATOS_MOCK[idx];
     this.cliente = CLIENTES_MOCK[idx % CLIENTES_MOCK.length];

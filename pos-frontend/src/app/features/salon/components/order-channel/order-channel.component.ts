@@ -8,7 +8,10 @@ import { CanalVenta, PedidoCanal } from '../../models/salon.model';
   imports: [DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="channel" [class.channel--expanded]="expanded()">
+    <div class="channel" [class.channel--expanded]="expanded()"
+         draggable="true"
+         (dragstart)="dragStart.emit($event)"
+         (dragend)="dragEnd.emit()">
       <!-- Header (always visible) -->
       <button class="channel__header" (click)="toggle()">
         <div class="channel__left">
@@ -87,10 +90,11 @@ import { CanalVenta, PedidoCanal } from '../../models/salon.model';
   `,
   styles: [`
     .channel {
-      background: transparent;
+      background: #fff;
       border-radius: 10px;
       overflow: hidden;
-      border: 1px solid #F0F0F0;
+      border: 1px solid #E5E7EB;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     }
     .channel__header {
       display: flex;
@@ -287,6 +291,8 @@ export class OrderChannelComponent {
   expanded = signal(false);
   nuevoPedido = output<void>();
   pedidoClick = output<PedidoCanal>();
+  dragStart = output<DragEvent>();
+  dragEnd = output<void>();
 
   readonly maxDemora = computed(() =>
     Math.max(...this.canal().pedidos.map(p => p.minutosDesdeCreacion), 0)

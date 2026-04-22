@@ -54,5 +54,5 @@ import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 export class PinInputComponent {
   length = input<number>(0);
   error = input<boolean>(false);
-  readonly digits = [0, 1, 2, 3, 4, 5];
+  readonly digits = [0, 1, 2, 3];
 }

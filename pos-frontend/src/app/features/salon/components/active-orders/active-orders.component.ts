@@ -38,11 +38,14 @@ type SortOrder = 'asc' | 'desc';
         </div>
 
         <div class="active-orders__list">
+          <ng-content select="[prepend]" />
           @for (canal of filteredCanales(); track canal.tipo) {
             <app-order-channel
               [canal]="canal"
               (nuevoPedido)="onNuevoPedido(canal)"
               (pedidoClick)="onPedidoClick($event)"
+              (dragStart)="canalDragStart.emit({ tipo: canal.tipo, event: $event })"
+              (dragEnd)="canalDragEnd.emit()"
             />
           }
         </div>
@@ -127,23 +130,25 @@ type SortOrder = 'asc' | 'desc';
     .active-orders__card {
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      background: rgba(255, 255, 255, 0.95);
+      gap: 0;
+      background: #F1F5F9;
       border-radius: 14px;
-      padding: 16px;
-      box-shadow: -2px 0 12px rgba(0, 0, 0, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.6);
+      padding: 0;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+      border: 1px solid #CBD5E1;
       flex: 1;
       min-height: 0;
       overflow: hidden;
-      backdrop-filter: blur(8px);
     }
     .active-orders__header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-shrink: 0;
+      background: linear-gradient(180deg, #0A0E4A 0%, #01033E 100%);
+      padding: 0 10px 0 14px;
+      min-height: 42px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     }
     .active-orders__header-left {
       display: flex;
@@ -151,20 +156,22 @@ type SortOrder = 'asc' | 'desc';
       gap: 10px;
     }
     .active-orders__title {
-      font-size: 18px;
+      font-size: 13px;
       font-weight: 700;
-      color: #001345;
+      color: #fff;
       margin: 0;
+      letter-spacing: 0.3px;
     }
     .active-orders__badge {
-      background: #1155CC;
+      background: #F27920;
       color: #fff;
-      font-size: 14px;
-      font-weight: 500;
-      padding: 2px 10px;
-      border-radius: 10px;
-      min-width: 24px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      min-width: 22px;
       text-align: center;
+      line-height: 1.3;
     }
     .active-orders__header-actions {
       display: flex;
@@ -175,25 +182,27 @@ type SortOrder = 'asc' | 'desc';
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      border: 1.5px solid #1155CC;
-      background: #fff;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.8);
       cursor: pointer;
-      transition: background 0.15s;
+      transition: background 0.15s, color 0.15s;
       padding: 0;
     }
+    .active-orders__cta svg { stroke: currentColor; }
     .active-orders__cta:hover {
-      background: #EEF2FF;
-    }
-    .active-orders__cta--active {
-      background: #1155CC !important;
+      background: rgba(255, 255, 255, 0.14);
       color: #fff;
     }
-    .active-orders__cta--active svg {
-      stroke: #fff;
+    .active-orders__cta--active {
+      background: #F27920 !important;
+      color: #fff;
+      border-color: #F27920;
     }
+    .active-orders__cta--active svg { stroke: #fff; }
 
     /* Filter dialog (centered) */
     .filter-backdrop {
@@ -347,6 +356,7 @@ type SortOrder = 'asc' | 'desc';
       overflow-y: auto;
       flex: 1;
       min-height: 0;
+      padding: 14px 16px 16px;
     }
 
     @media (max-width: 1024px) {
@@ -362,6 +372,8 @@ export class ActiveOrdersComponent {
   private readonly router = inject(Router);
   canales = input.required<CanalVenta[]>();
   nuevoPedidoCanal = output<string>();
+  canalDragStart = output<{ tipo: CanalVentaTipo; event: DragEvent }>();
+  canalDragEnd = output<void>();
 
   readonly showFilterModal = signal(false);
   readonly sortOrder = signal<SortOrder>('asc');

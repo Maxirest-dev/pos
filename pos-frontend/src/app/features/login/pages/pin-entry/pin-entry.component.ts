@@ -40,7 +40,7 @@ import { MOCK_PIN } from '../../data/mock-users.data';
 
       <button
         class="pin-entry__verify"
-        [disabled]="pin().length < 6 || isBlocked()"
+        [disabled]="pin().length < 4 || isBlocked()"
         (click)="verify()"
       >
         Verificar
@@ -219,13 +219,13 @@ export class PinEntryComponent {
 
     if (key === 'delete') {
       this.pin.update(p => p.slice(0, -1));
-    } else if (this.pin().length < 6) {
+    } else if (this.pin().length < 4) {
       this.pin.update(p => p + key);
     }
   }
 
   verify(): void {
-    if (this.pin().length !== 6) return;
+    if (this.pin().length !== 4) return;
 
     const valid = this.authService.validatePin(this.pin());
     if (valid) {

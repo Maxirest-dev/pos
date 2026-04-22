@@ -139,7 +139,7 @@ import { ItemPedido, Comensal, Producto } from './models/mesa-pedido.model';
       height: 100vh;
       height: 100dvh;
       overflow: hidden;
-      background: #F5F5F5;
+      background: #F8FAFC;
     }
 
     /* Body */
@@ -154,17 +154,18 @@ import { ItemPedido, Comensal, Producto } from './models/mesa-pedido.model';
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
-      background: #01033E;
-      border-right: 2px solid #E5E7EB;
+      background: #F1F5F9;
+      border-right: 1px solid #CBD5E1;
     }
 
-    /* Mesa info bar (inside pedido column) */
+    /* Mesa info bar (cinta dark arriba del panel pedido) */
     .mesa-view__mesa-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 10px 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: linear-gradient(180deg, #0A0E4A 0%, #01033E 100%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
       flex-shrink: 0;
     }
     .mesa-view__left {

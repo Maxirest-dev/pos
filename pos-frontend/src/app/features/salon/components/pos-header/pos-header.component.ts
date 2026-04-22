@@ -91,10 +91,14 @@ import { AuthService } from '../../../../core/services/auth.service';
       align-items: center;
       justify-content: space-between;
       height: 64px;
-      background: #01033E;
+      background: linear-gradient(180deg, #0A0E4A 0%, #01033E 100%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
       padding: 0 16px;
       gap: 16px;
       flex-shrink: 0;
+      position: relative;
+      z-index: 10;
     }
     .pos-header__left {
       display: flex;

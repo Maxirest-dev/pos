@@ -1,7 +1,7 @@
 import { PosUser } from '../../../core/models';
 
-/** PIN de prueba para todos los usuarios: 000000 */
-export const MOCK_PIN = '000000';
+/** PIN de prueba para todos los usuarios: 0000 */
+export const MOCK_PIN = '0000';
 
 export const MOCK_USERS: PosUser[] = [
   { id: '1', nombre: 'Andrea', tipo: 'MOZO', avatar: '🍽️', pin: MOCK_PIN, activo: true, bloqueado: false, intentosFallidos: 0 },

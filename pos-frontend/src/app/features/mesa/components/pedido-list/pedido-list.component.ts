@@ -161,8 +161,8 @@ import { ItemPedido, Comensal } from '../../models/mesa-pedido.model';
       flex-direction: column;
       flex: 1;
       min-height: 0;
-      background: #01033E;
-      color: #fff;
+      background: #F1F5F9;
+      color: #1E293B;
       overflow: hidden;
     }
 
@@ -172,7 +172,8 @@ import { ItemPedido, Comensal } from '../../models/mesa-pedido.model';
       gap: 6px;
       padding: 8px 12px;
       flex-shrink: 0;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      background: #fff;
+      border-bottom: 1px solid #E5E7EB;
     }
     .pedido__topbar-btn {
       display: flex;
@@ -180,9 +181,9 @@ import { ItemPedido, Comensal } from '../../models/mesa-pedido.model';
       gap: 6px;
       padding: 7px 12px;
       border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.06);
-      color: rgba(255,255,255,0.7);
+      border: 1px solid #CBD5E1;
+      background: #fff;
+      color: #475569;
       font-size: 12px;
       font-weight: 600;
       font-family: inherit;
@@ -190,11 +191,11 @@ import { ItemPedido, Comensal } from '../../models/mesa-pedido.model';
       transition: background 0.15s;
     }
     .pedido__topbar-btn:hover {
-      background: rgba(255,255,255,0.1);
+      background: #F1F5F9;
     }
     .pedido__topbar-btn--dashed {
       border-style: dashed;
-      color: rgba(255,255,255,0.4);
+      color: #94A3B8;
     }
     .pedido__topbar-menu {
       position: relative;
@@ -208,13 +209,13 @@ import { ItemPedido, Comensal } from '../../models/mesa-pedido.model';
       top: 100%;
       right: 0;
       margin-top: 4px;
-      background: #0A0E4A;
-      border: 1px solid rgba(255,255,255,0.1);
+      background: #fff;
+      border: 1px solid #E5E7EB;
       border-radius: 10px;
       padding: 4px;
       min-width: 200px;
       z-index: 50;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
       animation: fadeIn 0.12s ease-out;
     }
     .menu-dropdown__item {
@@ -226,7 +227,7 @@ import { ItemPedido, Comensal } from '../../models/mesa-pedido.model';
       border: none;
       border-radius: 8px;
       background: none;
-      color: rgba(255,255,255,0.75);
+      color: #334155;
       font-size: 13px;
       font-weight: 500;
       font-family: inherit;
@@ -234,10 +235,10 @@ import { ItemPedido, Comensal } from '../../models/mesa-pedido.model';
       transition: background 0.12s;
     }
     .menu-dropdown__item:hover {
-      background: rgba(255,255,255,0.08);
+      background: #F1F5F9;
     }
     .menu-dropdown__item--danger {
-      color: #F87171;
+      color: #DC2626;
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
@@ -253,16 +254,17 @@ import { ItemPedido, Comensal } from '../../models/mesa-pedido.model';
       padding: 8px 12px;
       font-size: 10px;
       font-weight: 600;
-      color: rgba(255,255,255,0.4);
+      color: #94A3B8;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: #F8FAFC;
+      border-bottom: 1px solid #E5E7EB;
       flex-shrink: 0;
     }
     .pedido__scroll {
       flex: 1;
       overflow-y: auto;
-      background: #F5F5F5;
+      background: #fff;
     }
     .pedido__row {
       display: flex;
@@ -327,20 +329,21 @@ import { ItemPedido, Comensal } from '../../models/mesa-pedido.model';
     /* Totals */
     .pedido__totals {
       padding: 10px 12px;
-      border-top: 1px solid rgba(255,255,255,0.1);
+      background: #F8FAFC;
+      border-top: 1px solid #E5E7EB;
       flex-shrink: 0;
     }
     .pedido__total-row {
       display: flex;
       justify-content: space-between;
       font-size: 12px;
-      color: rgba(255,255,255,0.5);
+      color: #64748B;
       padding: 2px 0;
     }
     .pedido__total-row--total {
       font-size: 16px;
       font-weight: 800;
-      color: #fff;
+      color: #0F172A;
       padding-top: 4px;
     }
 
@@ -349,7 +352,8 @@ import { ItemPedido, Comensal } from '../../models/mesa-pedido.model';
       display: flex;
       gap: 6px;
       padding: 10px 12px;
-      border-top: 1px solid rgba(255,255,255,0.1);
+      background: #F1F5F9;
+      border-top: 1px solid #CBD5E1;
       flex-shrink: 0;
     }
     .action-btn {
@@ -359,9 +363,9 @@ import { ItemPedido, Comensal } from '../../models/mesa-pedido.model';
       gap: 4px;
       padding: 8px 6px;
       border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.06);
-      color: rgba(255,255,255,0.7);
+      border: 1px solid #CBD5E1;
+      background: #fff;
+      color: #475569;
       font-size: 9px;
       font-weight: 600;
       cursor: pointer;
@@ -370,7 +374,7 @@ import { ItemPedido, Comensal } from '../../models/mesa-pedido.model';
       transition: background 0.15s;
     }
     .action-btn:hover {
-      background: rgba(255,255,255,0.1);
+      background: #F8FAFC;
     }
     .action-btn--marcha {
       background: #F27920;

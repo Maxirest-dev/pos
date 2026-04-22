@@ -7,6 +7,8 @@ interface Cliente {
   avatar: string;
 }
 
+type DialogMode = 'list' | 'form' | 'qr';
+
 @Component({
   selector: 'app-cliente-dialog',
   standalone: true,
@@ -28,54 +30,88 @@ interface Cliente {
           <input type="text" placeholder="Buscar por nombre, teléfono o dirección..." class="dialog__search-input" />
         </div>
 
-        @if (!showNuevoForm()) {
-          <div class="dialog__grid">
-            @for (cliente of clientes(); track cliente.id) {
-              <button class="card" [class.card--selected]="selected() === cliente.id" (click)="selected.set(cliente.id)">
-                <span class="card__avatar" [class.card__avatar--selected]="selected() === cliente.id">{{ cliente.avatar }}</span>
-                <span class="card__nombre">{{ cliente.nombre }}</span>
-                <span class="card__detalle">{{ cliente.detalle }}</span>
+        @switch (mode()) {
+          @case ('list') {
+            <div class="dialog__grid">
+              @for (cliente of clientes(); track cliente.id) {
+                <button class="card" (click)="confirmar.emit(cliente.id)">
+                  <span class="card__avatar">{{ cliente.avatar }}</span>
+                  <span class="card__nombre">{{ cliente.nombre }}</span>
+                  <span class="card__detalle">{{ cliente.detalle }}</span>
+                </button>
+              }
+            </div>
+
+            <div class="dialog__footer">
+              <button class="btn btn--ghost" (click)="confirmar.emit('sin-cliente')">Continuar sin cliente</button>
+              <button class="btn btn--secondary" (click)="mode.set('qr')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                </svg>
+                Escanear QR
               </button>
-            }
-          </div>
+              <button class="btn btn--confirm" (click)="mode.set('form')">+ Nuevo Cliente</button>
+            </div>
+          }
+          @case ('form') {
+            <div class="nuevo-form">
+              <div class="nuevo-form__row">
+                <div class="nuevo-form__field nuevo-form__field--lg">
+                  <label class="nuevo-form__label">Nombre completo</label>
+                  <input type="text" class="nuevo-form__input" placeholder="Nombre y apellido" #nombreInput />
+                </div>
+                <div class="nuevo-form__field">
+                  <label class="nuevo-form__label">Teléfono</label>
+                  <input type="text" class="nuevo-form__input" placeholder="11-XXXX-XXXX" />
+                </div>
+              </div>
+              <div class="nuevo-form__field">
+                <label class="nuevo-form__label">Email</label>
+                <input type="email" class="nuevo-form__input" placeholder="nombre@correo.com" />
+              </div>
+              <div class="nuevo-form__field">
+                <label class="nuevo-form__label">Dirección</label>
+                <input type="text" class="nuevo-form__input" placeholder="Calle, número, piso, depto..." />
+              </div>
+              <div class="nuevo-form__row">
+                <div class="nuevo-form__field">
+                  <label class="nuevo-form__label">Localidad</label>
+                  <input type="text" class="nuevo-form__input" placeholder="Barrio / Localidad" />
+                </div>
+                <div class="nuevo-form__field">
+                  <label class="nuevo-form__label">Observaciones</label>
+                  <input type="text" class="nuevo-form__input" placeholder="Timbre, referencias..." />
+                </div>
+              </div>
+            </div>
 
-          <div class="dialog__footer">
-            <button class="btn btn--ghost" (click)="confirmar.emit('sin-cliente')">Continuar sin cliente</button>
-            <button class="btn btn--secondary" (click)="showNuevoForm.set(true)">+ Nuevo Cliente</button>
-            <button class="btn btn--confirm" [disabled]="!selected()" (click)="confirmar.emit(selected()!)">Aceptar</button>
-          </div>
-        } @else {
-          <div class="nuevo-form">
-            <div class="nuevo-form__row">
-              <div class="nuevo-form__field nuevo-form__field--lg">
-                <label class="nuevo-form__label">Nombre completo</label>
-                <input type="text" class="nuevo-form__input" placeholder="Nombre y apellido" #nombreInput />
+            <div class="dialog__footer">
+              <button class="btn btn--secondary" (click)="mode.set('list')">Volver</button>
+              <button class="btn btn--confirm" (click)="onCrearCliente(nombreInput.value)">Crear y asignar</button>
+            </div>
+          }
+          @case ('qr') {
+            <div class="qr-scan">
+              <div class="qr-scan__frame">
+                <span class="qr-scan__corner qr-scan__corner--tl"></span>
+                <span class="qr-scan__corner qr-scan__corner--tr"></span>
+                <span class="qr-scan__corner qr-scan__corner--bl"></span>
+                <span class="qr-scan__corner qr-scan__corner--br"></span>
+                <div class="qr-scan__laser"></div>
+                <svg class="qr-scan__icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#F27920" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                </svg>
               </div>
-              <div class="nuevo-form__field">
-                <label class="nuevo-form__label">Teléfono</label>
-                <input type="text" class="nuevo-form__input" placeholder="11-XXXX-XXXX" />
+              <div class="qr-scan__text">
+                <h4 class="qr-scan__title">Esperando escaneo…</h4>
+                <p class="qr-scan__desc">Pedile al cliente que escanee el QR desde su teléfono para completar sus datos automáticamente.</p>
               </div>
             </div>
-            <div class="nuevo-form__field">
-              <label class="nuevo-form__label">Dirección</label>
-              <input type="text" class="nuevo-form__input" placeholder="Calle, número, piso, depto..." />
-            </div>
-            <div class="nuevo-form__row">
-              <div class="nuevo-form__field">
-                <label class="nuevo-form__label">Localidad</label>
-                <input type="text" class="nuevo-form__input" placeholder="Barrio / Localidad" />
-              </div>
-              <div class="nuevo-form__field">
-                <label class="nuevo-form__label">Observaciones</label>
-                <input type="text" class="nuevo-form__input" placeholder="Timbre, referencias..." />
-              </div>
-            </div>
-          </div>
 
-          <div class="dialog__footer">
-            <button class="btn btn--secondary" (click)="showNuevoForm.set(false)">Volver</button>
-            <button class="btn btn--confirm" (click)="onCrearCliente(nombreInput.value)">Crear y asignar</button>
-          </div>
+            <div class="dialog__footer">
+              <button class="btn btn--secondary" (click)="mode.set('list')">Volver</button>
+            </div>
+          }
         }
       </div>
     </div>
@@ -92,15 +128,15 @@ interface Cliente {
     .dialog__search-input { border: none; outline: none; flex: 1; font-size: 13px; font-family: inherit; color: #374151; }
     .dialog__search-input::placeholder { color: #9CA3AF; }
     .dialog__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-    .card { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 8px; border-radius: 12px; border: 1.5px solid #E5E7EB; background: #fff; cursor: pointer; font-family: inherit; transition: border-color 0.12s; }
-    .card:hover { border-color: #F27920; }
-    .card--selected { border-color: #F27920; background: #FFF7ED; }
-    .card__avatar { width: 40px; height: 40px; border-radius: 50%; background: #F3F4F6; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-    .card__avatar--selected { background: #F27920; }
+    .card { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 8px; border-radius: 12px; border: 1.5px solid #E5E7EB; background: #fff; cursor: pointer; font-family: inherit; transition: border-color 0.12s, background 0.12s, transform 0.12s; }
+    .card:hover { border-color: #F27920; background: #FFF7ED; transform: translateY(-1px); }
+    .card:hover .card__avatar { background: #F27920; color: #fff; }
+    .card:active { transform: translateY(0); }
+    .card__avatar { width: 40px; height: 40px; border-radius: 50%; background: #F3F4F6; display: flex; align-items: center; justify-content: center; font-size: 20px; transition: background 0.12s, color 0.12s; }
     .card__nombre { font-size: 12px; font-weight: 600; color: #1a1a1a; text-align: center; }
     .card__detalle { font-size: 10px; color: #9CA3AF; text-align: center; }
-    .dialog__footer { display: flex; justify-content: flex-end; gap: 10px; }
-    .btn { padding: 10px 24px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+    .dialog__footer { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s; }
     .btn--secondary { border: 1.5px solid #E5E7EB; background: #fff; color: #374151; }
     .btn--secondary:hover { background: #F9FAFB; }
     .btn--confirm { border: none; background: #F27920; color: #fff; }
@@ -122,6 +158,70 @@ interface Cliente {
     .nuevo-form__input:focus { border-color: #F27920; }
     .nuevo-form__input::placeholder { color: #D1D5DB; }
 
+    /* QR scan mock */
+    .qr-scan {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      padding: 20px 0 24px;
+    }
+    .qr-scan__frame {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: repeating-linear-gradient(45deg, #F8FAFC, #F8FAFC 8px, #F1F5F9 8px, #F1F5F9 16px);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .qr-scan__corner {
+      position: absolute;
+      width: 26px;
+      height: 26px;
+      border: 3px solid #F27920;
+    }
+    .qr-scan__corner--tl { top: 10px; left: 10px; border-right: none; border-bottom: none; border-top-left-radius: 8px; }
+    .qr-scan__corner--tr { top: 10px; right: 10px; border-left: none; border-bottom: none; border-top-right-radius: 8px; }
+    .qr-scan__corner--bl { bottom: 10px; left: 10px; border-right: none; border-top: none; border-bottom-left-radius: 8px; }
+    .qr-scan__corner--br { bottom: 10px; right: 10px; border-left: none; border-top: none; border-bottom-right-radius: 8px; }
+    .qr-scan__laser {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #F27920, transparent);
+      box-shadow: 0 0 10px rgba(242, 121, 32, 0.6);
+      animation: laser 2s ease-in-out infinite;
+    }
+    .qr-scan__icon {
+      opacity: 0.3;
+    }
+    .qr-scan__text {
+      text-align: center;
+      max-width: 360px;
+    }
+    .qr-scan__title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin: 0 0 6px;
+    }
+    .qr-scan__desc {
+      font-size: 12px;
+      color: #6B7280;
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    @keyframes laser {
+      0% { top: 20px; opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { top: 160px; opacity: 0; }
+    }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
   `],
@@ -129,8 +229,7 @@ interface Cliente {
 export class ClienteDialogComponent {
   confirmar = output<string>();
   cancelar = output<void>();
-  readonly selected = signal<string | null>(null);
-  readonly showNuevoForm = signal(false);
+  readonly mode = signal<DialogMode>('list');
 
   readonly clientes = signal<Cliente[]>([
     { id: 'c1', nombre: 'Juan Carlos Lali', avatar: '👤', detalle: 'Av. Corrientes 1234' },
