@@ -15,14 +15,15 @@ import { ShiftType, SHIFT_OPTIONS } from '../../../../core/models';
       </div>
 
       <div class="shift-confirm__card">
-        <!-- Back -->
-        <button class="shift-confirm__back" (click)="goBack()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
-          </svg>
-        </button>
-
-        <h2 class="shift-confirm__title">Confirma los datos del turno</h2>
+        <div class="shift-confirm__header">
+          <button class="shift-confirm__back" (click)="goBack()" aria-label="Volver">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+            </svg>
+          </button>
+          <h2 class="shift-confirm__title">Confirma los datos del turno</h2>
+          <span class="shift-confirm__header-spacer" aria-hidden="true"></span>
+        </div>
 
         <button class="shift-confirm__details-card" (click)="openEditor()">
           <!-- Calendar badge -->
@@ -156,32 +157,44 @@ import { ShiftType, SHIFT_OPTIONS } from '../../../../core/models';
     .shift-confirm__card {
       background: #fff;
       border-radius: 16px;
-      padding: 32px 40px;
+      padding: 20px 32px 32px;
       box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 24px;
-      min-width: 300px;
-      position: relative;
+      gap: 20px;
+      min-width: 380px;
+    }
+    .shift-confirm__header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .shift-confirm__back,
+    .shift-confirm__header-spacer {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
     }
     .shift-confirm__back {
-      position: absolute;
-      top: 14px;
-      left: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       background: none;
       border: none;
-      color: #bbb;
+      color: #888;
       cursor: pointer;
-      padding: 6px;
       border-radius: 8px;
       transition: color 0.15s, background 0.15s;
     }
     .shift-confirm__back:hover {
-      color: #333;
-      background: #f5f5f5;
+      color: #01033E;
+      background: #f3f4f8;
     }
     .shift-confirm__title {
+      flex: 1;
+      text-align: center;
       font-size: 16px;
       font-weight: 500;
       color: #333;
@@ -190,8 +203,9 @@ import { ShiftType, SHIFT_OPTIONS } from '../../../../core/models';
     .shift-confirm__details-card {
       display: flex;
       align-items: center;
-      gap: 20px;
-      padding: 16px 24px;
+      justify-content: center;
+      gap: 24px;
+      padding: 16px 28px;
       border-radius: 14px;
       border: 1.5px solid #ebebeb;
       background: #fff;

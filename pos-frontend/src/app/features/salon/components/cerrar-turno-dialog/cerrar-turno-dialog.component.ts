@@ -51,7 +51,6 @@ interface BilleteRow {
         <!-- PASO 2: Recuento de caja -->
         @if (paso() === 'recuento') {
           <div class="dialog__header-left">
-            <span class="dialog__icon">💰</span>
             <h3 class="dialog__title">Recuento de caja</h3>
           </div>
 
@@ -94,7 +93,6 @@ interface BilleteRow {
         <!-- PASO 3: Diferencia detectada -->
         @if (paso() === 'diferencia') {
           <div class="dialog__header-left">
-            <span class="dialog__icon">💰</span>
             <h3 class="dialog__title">Caja</h3>
           </div>
 
@@ -113,7 +111,6 @@ interface BilleteRow {
         <!-- PASO 4: Validado -->
         @if (paso() === 'validado') {
           <div class="dialog__header-left">
-            <span class="dialog__icon">💰</span>
             <h3 class="dialog__title">Recuento de caja</h3>
           </div>
 

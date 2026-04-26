@@ -19,7 +19,6 @@ interface DescuentoOpcion {
         </button>
 
         <div class="dialog__header">
-          <span class="dialog__icon">🏷️</span>
           <h3 class="dialog__title">Descuentos</h3>
         </div>
 

@@ -21,7 +21,6 @@ interface FacturaOption {
         </button>
 
         <div class="dialog__header">
-          <span class="dialog__icon">🧾</span>
           <h3 class="dialog__title">Facturar</h3>
         </div>
 

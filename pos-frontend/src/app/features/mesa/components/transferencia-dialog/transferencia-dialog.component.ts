@@ -1,5 +1,6 @@
 import { Component, signal, output, ChangeDetectionStrategy } from '@angular/core';
 
+
 @Component({
   selector: 'app-transferencia-dialog',
   standalone: true,
@@ -8,18 +9,10 @@ import { Component, signal, output, ChangeDetectionStrategy } from '@angular/cor
     <div class="backdrop" (click)="cancelar.emit()">
       <div class="dialog" (click)="$event.stopPropagation()">
         <div class="dialog__header">
-          <span class="dialog__icon">🔄</span>
           <h3 class="dialog__title">Transferencia</h3>
         </div>
 
         <div class="dialog__section">
-          <div class="dialog__section-header">
-            <span class="dialog__label">Origen</span>
-            <div class="dialog__tabs">
-              <button class="tab" [class.tab--active]="tab() === 'salon'" (click)="tab.set('salon')">Salón</button>
-              <button class="tab" [class.tab--active]="tab() === 'delivery'" (click)="tab.set('delivery')">Delivery</button>
-            </div>
-          </div>
           <span class="dialog__sublabel">Selecciona el canal de transferencia</span>
           <div class="dialog__channels">
             @for (ch of canales; track ch.id) {

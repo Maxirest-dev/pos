@@ -134,12 +134,39 @@ import { ItemPedido, Comensal } from '../../models/mesa-pedido.model';
           </svg>
           <span>Cobrar</span>
         </button>
-        <button class="action-btn" (click)="openFacturar.emit()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
-          </svg>
-          <span>Facturar</span>
-        </button>
+        <div class="action-btn-wrap">
+          <button class="action-btn" [class.action-btn--open]="facturarOpen()" (click)="toggleFacturar($event)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            <span>Facturar</span>
+          </button>
+          @if (facturarOpen()) {
+            <div class="facturar-popover" (click)="$event.stopPropagation()">
+              <button class="facturar-option" (click)="onFacturar('factura-a')">
+                <span class="facturar-option__icon">🅰️</span>
+                <div class="facturar-option__info">
+                  <span class="facturar-option__label">Factura A</span>
+                  <span class="facturar-option__detalle">Responsable Inscripto</span>
+                </div>
+              </button>
+              <button class="facturar-option" (click)="onFacturar('factura-b')">
+                <span class="facturar-option__icon">🅱️</span>
+                <div class="facturar-option__info">
+                  <span class="facturar-option__label">Factura B</span>
+                  <span class="facturar-option__detalle">Consumidor Final</span>
+                </div>
+              </button>
+              <button class="facturar-option" (click)="onFacturar('ticket')">
+                <span class="facturar-option__icon">🧾</span>
+                <div class="facturar-option__info">
+                  <span class="facturar-option__label">Ticket</span>
+                  <span class="facturar-option__detalle">Comprobante no fiscal</span>
+                </div>
+              </button>
+            </div>
+          }
+        </div>
         <button class="action-btn action-btn--marcha" (click)="marcha.emit()">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
@@ -161,7 +188,7 @@ import { ItemPedido, Comensal } from '../../models/mesa-pedido.model';
       flex-direction: column;
       flex: 1;
       min-height: 0;
-      background: #F1F5F9;
+      background: #F6F6F6;
       color: #1E293B;
       overflow: hidden;
     }
@@ -172,8 +199,8 @@ import { ItemPedido, Comensal } from '../../models/mesa-pedido.model';
       gap: 6px;
       padding: 8px 12px;
       flex-shrink: 0;
-      background: #fff;
-      border-bottom: 1px solid #E5E7EB;
+      background: linear-gradient(180deg, #0A0E4A 0%, #01033E 100%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     }
     .pedido__topbar-btn {
       display: flex;
@@ -181,21 +208,29 @@ import { ItemPedido, Comensal } from '../../models/mesa-pedido.model';
       gap: 6px;
       padding: 7px 12px;
       border-radius: 8px;
-      border: 1px solid #CBD5E1;
-      background: #fff;
-      color: #475569;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.9);
       font-size: 12px;
       font-weight: 600;
       font-family: inherit;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
     }
     .pedido__topbar-btn:hover {
-      background: #F1F5F9;
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
     }
     .pedido__topbar-btn--dashed {
       border-style: dashed;
-      color: #94A3B8;
+      border-color: rgba(255, 255, 255, 0.4);
+      color: #fff;
+      background: transparent;
+    }
+    .pedido__topbar-btn--dashed:hover {
+      border-color: rgba(255, 255, 255, 0.6);
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
     }
     .pedido__topbar-menu {
       position: relative;
@@ -251,32 +286,39 @@ import { ItemPedido, Comensal } from '../../models/mesa-pedido.model';
     }
     .pedido__header-row {
       display: flex;
-      padding: 8px 12px;
+      padding: 10px 18px 6px;
       font-size: 10px;
       font-weight: 600;
       color: #94A3B8;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      background: #F8FAFC;
-      border-bottom: 1px solid #E5E7EB;
+      background: #F6F6F6;
       flex-shrink: 0;
     }
     .pedido__scroll {
       flex: 1;
       overflow-y: auto;
-      background: #fff;
+      background: #F6F6F6;
+      padding: 0 10px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
     }
     .pedido__row {
       display: flex;
+      align-items: center;
       padding: 10px 12px;
       font-size: 13px;
       color: #1a1a1a;
-      border-bottom: 1px solid #E5E7EB;
-      transition: background 0.1s;
+      background: #fff;
+      border: 1px solid #ECECEC;
+      border-radius: 10px;
+      transition: background 0.1s, border-color 0.1s;
       cursor: pointer;
     }
     .pedido__row:hover {
-      background: #EBEBEB;
+      background: #FAFAFA;
+      border-color: #E0E0E0;
     }
     .pedido__row--enviado {
       opacity: 0.45;
@@ -328,9 +370,9 @@ import { ItemPedido, Comensal } from '../../models/mesa-pedido.model';
 
     /* Totals */
     .pedido__totals {
-      padding: 10px 12px;
-      background: #F8FAFC;
-      border-top: 1px solid #E5E7EB;
+      padding: 12px 16px;
+      background: #fff;
+      border-top: 1px solid #ECECEC;
       flex-shrink: 0;
     }
     .pedido__total-row {
@@ -352,8 +394,8 @@ import { ItemPedido, Comensal } from '../../models/mesa-pedido.model';
       display: flex;
       gap: 6px;
       padding: 10px 12px;
-      background: #F1F5F9;
-      border-top: 1px solid #CBD5E1;
+      background: linear-gradient(180deg, #0A0E4A 0%, #01033E 100%);
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
       flex-shrink: 0;
     }
     .action-btn {
@@ -363,18 +405,19 @@ import { ItemPedido, Comensal } from '../../models/mesa-pedido.model';
       gap: 4px;
       padding: 8px 6px;
       border-radius: 8px;
-      border: 1px solid #CBD5E1;
-      background: #fff;
-      color: #475569;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.9);
       font-size: 9px;
       font-weight: 600;
       cursor: pointer;
       font-family: inherit;
       flex: 1;
-      transition: background 0.15s;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
     }
     .action-btn:hover {
-      background: #F8FAFC;
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
     }
     .action-btn--marcha {
       background: #F27920;
@@ -383,6 +426,84 @@ import { ItemPedido, Comensal } from '../../models/mesa-pedido.model';
     }
     .action-btn--marcha:hover {
       background: #E06D15;
+      border-color: #E06D15;
+    }
+    .action-btn--open {
+      background: rgba(255, 255, 255, 0.18);
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Facturar popover */
+    .action-btn-wrap {
+      position: relative;
+      flex: 1;
+      display: flex;
+    }
+    .action-btn-wrap .action-btn { flex: 1; }
+    .facturar-popover {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      border-radius: 12px;
+      padding: 6px;
+      min-width: 240px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.25);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      z-index: 50;
+      animation: popoverIn 0.16s ease-out;
+    }
+    .facturar-popover::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: #fff;
+    }
+    .facturar-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: none;
+      border-radius: 8px;
+      background: none;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: left;
+      transition: background 0.12s;
+    }
+    .facturar-option:hover {
+      background: #FFF7ED;
+    }
+    .facturar-option__icon {
+      font-size: 22px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .facturar-option__info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .facturar-option__label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+    .facturar-option__detalle {
+      font-size: 11px;
+      color: #6B7280;
+    }
+    @keyframes popoverIn {
+      from { opacity: 0; transform: translate(-50%, 4px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
     }
   `],
 })
@@ -403,13 +524,32 @@ export class PedidoListComponent {
   openDescuento = output<void>();
   openControl = output<void>();
   openCobrar = output<void>();
-  openFacturar = output<void>();
+  facturar = output<'factura-a' | 'factura-b' | 'ticket'>();
 
   readonly showMenu = signal(false);
+  readonly facturarOpen = signal(false);
   readonly itemsFiltrados = computed(() => this.items());
 
   toggleMenu(): void {
     this.showMenu.update(v => !v);
+  }
+
+  toggleFacturar(event: MouseEvent): void {
+    event.stopPropagation();
+    const next = !this.facturarOpen();
+    this.facturarOpen.set(next);
+    if (next) {
+      setTimeout(() => document.addEventListener('click', this.closeFacturar, { once: true }));
+    }
+  }
+
+  private closeFacturar = (): void => {
+    this.facturarOpen.set(false);
+  };
+
+  onFacturar(tipo: 'factura-a' | 'factura-b' | 'ticket'): void {
+    this.facturarOpen.set(false);
+    this.facturar.emit(tipo);
   }
 
   readonly subtotal = computed(() =>

@@ -6,8 +6,11 @@ import { ActiveOrdersComponent } from './components/active-orders/active-orders.
 import { SalonReducedComponent } from './components/salon-reduced/salon-reduced.component';
 import { ChannelMainComponent } from './components/channel-main/channel-main.component';
 import { ComensalesDialogComponent } from '../mesa/components/comensales-dialog/comensales-dialog.component';
+import { MozoDialogComponent } from '../mesa/components/mozo-dialog/mozo-dialog.component';
 import { ClienteDialogComponent } from '../mesa/components/cliente-dialog/cliente-dialog.component';
 import { CerrarTurnoDialogComponent } from './components/cerrar-turno-dialog/cerrar-turno-dialog.component';
+import { CobrarDialogComponent } from '../mesa/components/cobrar-dialog/cobrar-dialog.component';
+import { FacturarDialogComponent } from '../mesa/components/facturar-dialog/facturar-dialog.component';
 import { AuthService } from '../../core/services/auth.service';
 import { ShiftService } from '../../core/services/shift.service';
 import { SalonLayoutService, MainView } from './services/salon-layout.service';
@@ -24,8 +27,11 @@ import { MOCK_SALONES, MOCK_CANALES } from './data/mock-salon.data';
     SalonReducedComponent,
     ChannelMainComponent,
     ComensalesDialogComponent,
+    MozoDialogComponent,
     ClienteDialogComponent,
     CerrarTurnoDialogComponent,
+    CobrarDialogComponent,
+    FacturarDialogComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { style: 'display: block; width: 100%; height: 100%;' },
@@ -65,6 +71,8 @@ import { MOCK_SALONES, MOCK_CANALES } from './data/mock-salon.data';
               [canal]="activeChannelMain()!"
               (nuevoPedido)="onNuevoPedidoCanal(activeChannelMain()!.tipo)"
               (pedidoClick)="onPedidoClick($event)"
+              (cobrar)="onCobrarPedido($event)"
+              (facturar)="onFacturarPedido($event)"
               (restaurar)="layout.reset()"
             />
             @if (isDragOverMain()) { <div class="drop-hint">Soltá acá para poner {{ draggingLabel() }} como principal</div> }
@@ -88,6 +96,13 @@ import { MOCK_SALONES, MOCK_CANALES } from './data/mock-salon.data';
       </div>
     </div>
 
+    @if (showMozoDialog()) {
+      <app-mozo-dialog
+        (confirmar)="onMozoConfirm($event)"
+        (cancelar)="onCancelMozo()"
+      />
+    }
+
     @if (showComensalesDialog()) {
       <app-comensales-dialog
         (confirmar)="onComensalesConfirm($event)"
@@ -106,6 +121,22 @@ import { MOCK_SALONES, MOCK_CANALES } from './data/mock-salon.data';
       <app-cerrar-turno-dialog
         (cancelar)="showCerrarTurno.set(false)"
         (cerrarConfirmado)="onCerrarTurnoConfirmado()"
+      />
+    }
+
+    @if (pedidoCobrar(); as p) {
+      <app-cobrar-dialog
+        [total]="p.monto"
+        [pedidoLabel]="canalLabel(p.canalTipo) + ' · ' + p.numero"
+        (confirmar)="pedidoCobrar.set(null)"
+        (cancelar)="pedidoCobrar.set(null)"
+      />
+    }
+
+    @if (pedidoFacturar(); as p) {
+      <app-facturar-dialog
+        (confirmar)="pedidoFacturar.set(null)"
+        (cancelar)="pedidoFacturar.set(null)"
       />
     }
   `,
@@ -173,15 +204,19 @@ export class SalonComponent {
 
   readonly salones = MOCK_SALONES;
   readonly canales = MOCK_CANALES;
+  readonly showMozoDialog = signal(false);
   readonly showComensalesDialog = signal(false);
   readonly showClienteDialog = signal(false);
   readonly showCerrarTurno = signal(false);
+  readonly pedidoCobrar = signal<PedidoCanal | null>(null);
+  readonly pedidoFacturar = signal<PedidoCanal | null>(null);
 
   // Drag state para swap
   readonly draggingSource = signal<MainView | null>(null);
   readonly isDragOverMain = signal(false);
 
   private mesaSeleccionada: Mesa | null = null;
+  private mozoSeleccionadoId: string | null = null;
   private canalPedidoNuevo: string | null = null;
   private pedidoCounter = 100;
 
@@ -208,7 +243,8 @@ export class SalonComponent {
   onMesaClick(mesa: Mesa): void {
     if (mesa.estado === 'DISPONIBLE') {
       this.mesaSeleccionada = mesa;
-      this.showComensalesDialog.set(true);
+      this.mozoSeleccionadoId = null;
+      this.showMozoDialog.set(true);
     } else if (mesa.estado === 'OCUPADA') {
       this.router.navigate(['/mesa', mesa.numero], {
         queryParams: { comensales: mesa.comensales ?? 2 },
@@ -216,13 +252,31 @@ export class SalonComponent {
     }
   }
 
-  onComensalesConfirm(cantidad: number): void {
+  onMozoConfirm(mozoId: string): void {
+    this.mozoSeleccionadoId = mozoId;
+    this.showMozoDialog.set(false);
+    this.showComensalesDialog.set(true);
+  }
+
+  onCancelMozo(): void {
+    this.showMozoDialog.set(false);
+    this.mesaSeleccionada = null;
+    this.mozoSeleccionadoId = null;
+  }
+
+  onComensalesConfirm(result: { cantidad: number; observaciones: string[] }): void {
     this.showComensalesDialog.set(false);
     if (this.mesaSeleccionada) {
       this.router.navigate(['/mesa', this.mesaSeleccionada.numero], {
-        queryParams: { comensales: cantidad },
+        queryParams: {
+          comensales: result.cantidad,
+          mozo: this.mozoSeleccionadoId,
+          obs: result.observaciones.length ? result.observaciones.join(',') : null,
+        },
       });
     }
+    this.mesaSeleccionada = null;
+    this.mozoSeleccionadoId = null;
   }
 
   onNuevoPedidoCanal(canalTipo: string): void {
@@ -245,6 +299,18 @@ export class SalonComponent {
     this.router.navigate(['/mesa', pedido.numero.replace('#', '')], {
       queryParams: { modo: 'pedido', canal: pedido.canalTipo },
     });
+  }
+
+  onCobrarPedido(pedido: PedidoCanal): void {
+    this.pedidoCobrar.set(pedido);
+  }
+
+  onFacturarPedido(pedido: PedidoCanal): void {
+    this.pedidoFacturar.set(pedido);
+  }
+
+  canalLabel(tipo: CanalVentaTipo): string {
+    return this.canales.find(c => c.tipo === tipo)?.label ?? tipo;
   }
 
   onCerrarTurno(): void {

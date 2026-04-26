@@ -18,12 +18,12 @@ import { PosUser } from '../../../core/models';
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 14px;
       background: none;
       border: none;
       cursor: pointer;
-      padding: 8px;
-      border-radius: 16px;
+      padding: 12px;
+      border-radius: 20px;
       transition: transform 0.15s, background 0.15s;
       -webkit-tap-highlight-color: transparent;
     }
@@ -35,9 +35,9 @@ import { PosUser } from '../../../core/models';
       transform: scale(0.97);
     }
     .avatar-card__img {
-      width: 80px;
-      height: 80px;
-      border-radius: 20px;
+      width: 120px;
+      height: 120px;
+      border-radius: 28px;
       background: rgba(255, 255, 255, 0.1);
       display: flex;
       align-items: center;
@@ -45,12 +45,12 @@ import { PosUser } from '../../../core/models';
       border: 2px solid rgba(255, 255, 255, 0.15);
     }
     .avatar-card__emoji {
-      font-size: 38px;
+      font-size: 56px;
       line-height: 1;
     }
     .avatar-card__name {
       color: rgba(255, 255, 255, 0.9);
-      font-size: 13px;
+      font-size: 16px;
       font-weight: 500;
     }
   `],

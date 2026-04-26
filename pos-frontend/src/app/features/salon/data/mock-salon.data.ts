@@ -21,18 +21,18 @@ const ITEMS_PRINCIPAL: PlanoItem[] = [
   { id: 'dec-p-ent', tipo: 'entrada', row: 0, col: 5, rowSpan: 1, colSpan: 1 },
   // Plantas decorativas
   { id: 'dec-p-pl1', tipo: 'planta', row: 0, col: 1, rowSpan: 1, colSpan: 1 },
-  { id: 'dec-p-pl2', tipo: 'planta', row: 3, col: 7, rowSpan: 1, colSpan: 1 },
+  { id: 'dec-p-pl2', tipo: 'planta', row: 3, col: 9, rowSpan: 1, colSpan: 1 },
   // Pared divisoria vertical entre zona central y fondo
   { id: 'dec-p-par1', tipo: 'pared', row: 2, col: 7, rowSpan: 1, colSpan: 1, orientacion: 'vertical' },
 ];
 
 const ITEMS_TERRAZA: PlanoItem[] = [
-  // Plantas (baranda verde)
-  { id: 'dec-t-pl1', tipo: 'planta', row: 0, col: 0, rowSpan: 1, colSpan: 1 },
+  // Plantas (baranda verde) en celdas libres del fondo y costado
+  { id: 'dec-t-pl1', tipo: 'planta', row: 3, col: 0, rowSpan: 1, colSpan: 1 },
   { id: 'dec-t-pl2', tipo: 'planta', row: 2, col: 1, rowSpan: 1, colSpan: 1 },
-  { id: 'dec-t-pl3', tipo: 'planta', row: 2, col: 2, rowSpan: 1, colSpan: 1 },
+  { id: 'dec-t-pl3', tipo: 'planta', row: 3, col: 2, rowSpan: 1, colSpan: 1 },
   // Pared curva en una esquina (rincon con vista)
-  { id: 'dec-t-par1', tipo: 'pared', row: 0, col: 2, rowSpan: 1, colSpan: 1, orientacion: 'curva', curvaRotacion: 0 },
+  { id: 'dec-t-par1', tipo: 'pared', row: 0, col: 9, rowSpan: 1, colSpan: 1, orientacion: 'curva', curvaRotacion: 0 },
 ];
 
 export const MOCK_SALONES: Salon[] = [
@@ -122,8 +122,8 @@ export const MOCK_CANALES: CanalVenta[] = [
     iconColor: '#F27920',
     montoTotal: 55000,
     pedidos: [
-      { id: 'del-1', numero: '#12', canalTipo: 'DELIVERY', monto: 28000, estado: 'EN_CURSO', hora: '20:30', minutosDesdeCreacion: 35 },
-      { id: 'del-2', numero: '#13', canalTipo: 'DELIVERY', monto: 27000, estado: 'LISTO', hora: '20:45', minutosDesdeCreacion: 20 },
+      { id: 'del-1', numero: '#12', canalTipo: 'DELIVERY', monto: 28000, estado: 'EN_CURSO', hora: '20:30', minutosDesdeCreacion: 35, cliente: 'Mariana López' },
+      { id: 'del-2', numero: '#13', canalTipo: 'DELIVERY', monto: 27000, estado: 'LISTO', hora: '20:45', minutosDesdeCreacion: 20, cliente: 'Federico Sosa' },
     ],
   },
   {
@@ -134,8 +134,8 @@ export const MOCK_CANALES: CanalVenta[] = [
     iconColor: '#3B82F6',
     montoTotal: 45500,
     pedidos: [
-      { id: 'mos-1', numero: '#5', canalTipo: 'MOSTRADOR', monto: 22500, estado: 'EN_CURSO', hora: '20:50', minutosDesdeCreacion: 15 },
-      { id: 'mos-2', numero: '#6', canalTipo: 'MOSTRADOR', monto: 23000, estado: 'EN_CURSO', hora: '21:00', minutosDesdeCreacion: 8 },
+      { id: 'mos-1', numero: '#5', canalTipo: 'MOSTRADOR', monto: 22500, estado: 'EN_CURSO', hora: '20:50', minutosDesdeCreacion: 15, cliente: 'Tomás Iglesias' },
+      { id: 'mos-2', numero: '#6', canalTipo: 'MOSTRADOR', monto: 23000, estado: 'EN_CURSO', hora: '21:00', minutosDesdeCreacion: 8, cliente: 'Camila Ruiz' },
     ],
   },
   {
@@ -146,10 +146,10 @@ export const MOCK_CANALES: CanalVenta[] = [
     iconColor: '#E11D48',
     montoTotal: 38500,
     pedidos: [
-      { id: 'py-1', numero: '#7', canalTipo: 'PEDIDOS_YA', monto: 20000, estado: 'EN_CURSO', hora: '20:20', minutosDesdeCreacion: 50 },
-      { id: 'py-2', numero: '#8', canalTipo: 'PEDIDOS_YA', monto: 20000, estado: 'EN_CURSO', hora: '20:35', minutosDesdeCreacion: 30 },
-      { id: 'py-3', numero: '#10', canalTipo: 'PEDIDOS_YA', monto: 20000, estado: 'LISTO', hora: '20:10', minutosDesdeCreacion: 12 },
-      { id: 'py-4', numero: '#7', canalTipo: 'PEDIDOS_YA', monto: 35000, estado: 'EN_CURSO', hora: '21:05', minutosDesdeCreacion: 5 },
+      { id: 'py-1', numero: '#7', canalTipo: 'PEDIDOS_YA', monto: 20000, estado: 'EN_CURSO', hora: '20:20', minutosDesdeCreacion: 50, cliente: 'Lucía Pereyra' },
+      { id: 'py-2', numero: '#8', canalTipo: 'PEDIDOS_YA', monto: 20000, estado: 'EN_CURSO', hora: '20:35', minutosDesdeCreacion: 30, cliente: 'Diego Moreno' },
+      { id: 'py-3', numero: '#10', canalTipo: 'PEDIDOS_YA', monto: 20000, estado: 'LISTO', hora: '20:10', minutosDesdeCreacion: 12, cliente: 'Sofía Romero' },
+      { id: 'py-4', numero: '#7', canalTipo: 'PEDIDOS_YA', monto: 35000, estado: 'EN_CURSO', hora: '21:05', minutosDesdeCreacion: 5, cliente: 'Martín Acosta' },
     ],
   },
   {
@@ -160,8 +160,8 @@ export const MOCK_CANALES: CanalVenta[] = [
     iconColor: '#FF5A00',
     montoTotal: 90000,
     pedidos: [
-      { id: 'rap-1', numero: '#3', canalTipo: 'RAPPI', monto: 45000, estado: 'EN_CURSO', hora: '20:15', minutosDesdeCreacion: 48 },
-      { id: 'rap-2', numero: '#4', canalTipo: 'RAPPI', monto: 45000, estado: 'LISTO', hora: '20:40', minutosDesdeCreacion: 22 },
+      { id: 'rap-1', numero: '#3', canalTipo: 'RAPPI', monto: 45000, estado: 'EN_CURSO', hora: '20:15', minutosDesdeCreacion: 48, cliente: 'Valentina Costa' },
+      { id: 'rap-2', numero: '#4', canalTipo: 'RAPPI', monto: 45000, estado: 'LISTO', hora: '20:40', minutosDesdeCreacion: 22, cliente: 'Bruno Maldonado' },
     ],
   },
 ];

@@ -17,41 +17,12 @@ import { PosUser } from '../../../../core/models';
 
       <h1 class="user-selector__title">¿Quién anda ahí?</h1>
 
-      <div class="user-selector__search">
-        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Buscar..."
-          [value]="searchTerm()"
-          (input)="onSearch($event)"
-        />
-      </div>
-
       <div class="user-selector__carousel">
-        @if (currentPage() > 0) {
-          <button class="carousel-arrow carousel-arrow--left" (click)="prevPage()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="15 18 9 12 15 6"/>
-            </svg>
-          </button>
-        }
-
         <div class="user-selector__grid">
-          @for (user of visibleUsers(); track user.id) {
+          @for (user of allUsers(); track user.id) {
             <app-avatar-card [user]="user" (selected)="onUserSelected($event)" />
           }
         </div>
-
-        @if (currentPage() < totalPages() - 1) {
-          <button class="carousel-arrow carousel-arrow--right" (click)="nextPage()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
-          </button>
-        }
       </div>
     </div>
   `,
@@ -84,68 +55,39 @@ import { PosUser } from '../../../../core/models';
       color: #fff;
       font-size: 32px;
       font-weight: 700;
-      margin: 0;
-    }
-    .user-selector__search {
-      position: relative;
-      width: 100%;
-      max-width: 320px;
-    }
-    .search-icon {
-      position: absolute;
-      left: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: rgba(255, 255, 255, 0.4);
-    }
-    .search-input {
-      width: 100%;
-      padding: 12px 16px 12px 42px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      background: rgba(255, 255, 255, 0.08);
-      color: #fff;
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.2s;
-      box-sizing: border-box;
-    }
-    .search-input::placeholder {
-      color: rgba(255, 255, 255, 0.4);
-    }
-    .search-input:focus {
-      border-color: rgba(255, 255, 255, 0.3);
+      margin: 0 0 32px;
     }
     .user-selector__carousel {
       display: flex;
       align-items: center;
-      gap: 16px;
       width: 100%;
-      max-width: 800px;
-      justify-content: center;
+      max-width: 1200px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
     }
-    .carousel-arrow {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      background: rgba(255, 255, 255, 0.06);
-      color: rgba(255, 255, 255, 0.8);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: background 0.15s;
+    .user-selector__carousel::-webkit-scrollbar {
+      height: 8px;
     }
-    .carousel-arrow:hover {
-      background: rgba(255, 255, 255, 0.12);
+    .user-selector__carousel::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .user-selector__carousel::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+    .user-selector__carousel::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.35);
     }
     .user-selector__grid {
       display: flex;
       gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
+      padding: 4px 12px 12px;
+      margin: 0 auto;
     }
 
     @media (max-width: 600px) {
@@ -158,38 +100,10 @@ export class UserSelectorComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
-  readonly searchTerm = signal('');
-  readonly currentPage = signal(0);
-  readonly pageSize = 7;
-
-  private readonly filteredUsers = computed(() =>
-    this.authService.getUsers(this.searchTerm())
-  );
-
-  readonly totalPages = computed(() =>
-    Math.max(1, Math.ceil(this.filteredUsers().length / this.pageSize))
-  );
-
-  readonly visibleUsers = computed(() => {
-    const start = this.currentPage() * this.pageSize;
-    return this.filteredUsers().slice(start, start + this.pageSize);
-  });
-
-  onSearch(event: Event): void {
-    this.searchTerm.set((event.target as HTMLInputElement).value);
-    this.currentPage.set(0);
-  }
+  readonly allUsers = computed(() => this.authService.getUsers());
 
   onUserSelected(user: PosUser): void {
     this.authService.selectUser(user.id);
     this.router.navigate(['/login/pin']);
-  }
-
-  prevPage(): void {
-    this.currentPage.update(p => Math.max(0, p - 1));
-  }
-
-  nextPage(): void {
-    this.currentPage.update(p => Math.min(this.totalPages() - 1, p + 1));
   }
 }

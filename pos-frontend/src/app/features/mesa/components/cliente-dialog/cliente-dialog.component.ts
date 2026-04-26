@@ -21,7 +21,6 @@ type DialogMode = 'list' | 'form' | 'qr';
         </button>
 
         <div class="dialog__header">
-          <span class="dialog__icon">👤</span>
           <h3 class="dialog__title">Clientes</h3>
         </div>
 

@@ -67,6 +67,7 @@ export interface PedidoCanal {
   estado: 'EN_CURSO' | 'LISTO' | 'ENTREGADO';
   hora: string;
   minutosDesdeCreacion: number;
+  cliente?: string;
 }
 
 export interface CanalVenta {

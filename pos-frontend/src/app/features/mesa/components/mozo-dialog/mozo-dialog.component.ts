@@ -1,4 +1,4 @@
-import { Component, input, signal, computed, output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, computed, output, ChangeDetectionStrategy } from '@angular/core';
 
 interface Persona {
   id: string;
@@ -19,7 +19,6 @@ interface Persona {
         </button>
 
         <div class="dialog__header">
-          <span class="dialog__icon">{{ modoPedido() ? '🛵' : '👨‍🍳' }}</span>
           <h3 class="dialog__title">{{ modoPedido() ? 'Repartidores' : 'Mozos' }}</h3>
         </div>
 
@@ -30,16 +29,12 @@ interface Persona {
 
         <div class="dialog__grid">
           @for (p of personas(); track p.id) {
-            <button class="card" [class.card--selected]="selected() === p.id" (click)="selected.set(p.id)">
-              <span class="card__avatar" [class.card__avatar--selected]="selected() === p.id">{{ p.avatar }}</span>
+            <button class="card" (click)="confirmar.emit(p.id)">
+              <span class="card__avatar">{{ p.avatar }}</span>
               <span class="card__nombre">{{ p.nombre }}</span>
               <span class="card__rol">{{ p.rol }}</span>
             </button>
           }
-        </div>
-
-        <div class="dialog__footer">
-          <button class="btn btn--confirm" [disabled]="!selected()" (click)="confirmar.emit(selected()!)">Asignar</button>
         </div>
       </div>
     </div>
@@ -55,18 +50,13 @@ interface Persona {
     .dialog__search { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1.5px solid #E5E7EB; border-radius: 10px; margin-bottom: 16px; }
     .dialog__search-input { border: none; outline: none; flex: 1; font-size: 13px; font-family: inherit; color: #374151; }
     .dialog__search-input::placeholder { color: #9CA3AF; }
-    .dialog__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
-    .card { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 8px; border-radius: 12px; border: 1.5px solid #E5E7EB; background: #fff; cursor: pointer; font-family: inherit; transition: border-color 0.12s; }
-    .card:hover { border-color: #F27920; }
-    .card--selected { border-color: #F27920; background: #FFF7ED; }
+    .dialog__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .card { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 8px; border-radius: 12px; border: 1.5px solid #E5E7EB; background: #fff; cursor: pointer; font-family: inherit; transition: border-color 0.12s, background 0.12s, transform 0.1s; }
+    .card:hover { border-color: #F27920; background: #FFF7ED; }
+    .card:active { transform: scale(0.97); }
     .card__avatar { width: 40px; height: 40px; border-radius: 50%; background: #F3F4F6; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-    .card__avatar--selected { background: #F27920; }
     .card__nombre { font-size: 12px; font-weight: 600; color: #1a1a1a; text-align: center; }
     .card__rol { font-size: 10px; color: #9CA3AF; }
-    .dialog__footer { display: flex; justify-content: center; }
-    .btn--confirm { padding: 10px 40px; border-radius: 10px; border: none; background: #F27920; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s; }
-    .btn--confirm:hover { background: #E06D15; }
-    .btn--confirm:disabled { opacity: 0.4; cursor: not-allowed; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
   `],
@@ -75,7 +65,6 @@ export class MozoDialogComponent {
   modoPedido = input<boolean>(false);
   confirmar = output<string>();
   cancelar = output<void>();
-  readonly selected = signal<string | null>(null);
 
   private readonly mozos: Persona[] = [
     { id: 'm1', nombre: 'Carlos Méndez', rol: 'Mozo', avatar: '🍽️' },

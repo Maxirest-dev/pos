@@ -1,6 +1,5 @@
-import { Component, signal, computed, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, signal, computed, inject, OnInit, OnDestroy, ChangeDetectionStrategy, ElementRef, viewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { PosHeaderComponent } from '../salon/components/pos-header/pos-header.component';
 import { PedidoListComponent } from './components/pedido-list/pedido-list.component';
 import { CartaCatalogoComponent } from './components/carta-catalogo/carta-catalogo.component';
 import { ComensalesDialogComponent } from './components/comensales-dialog/comensales-dialog.component';
@@ -15,21 +14,19 @@ import { CantidadPadComponent } from './components/cantidad-pad/cantidad-pad.com
 import { NuevoArticuloDialogComponent } from './components/nuevo-articulo-dialog/nuevo-articulo-dialog.component';
 import { ControlDialogComponent } from './components/control-dialog/control-dialog.component';
 import { CobrarDialogComponent } from './components/cobrar-dialog/cobrar-dialog.component';
-import { FacturarDialogComponent } from './components/facturar-dialog/facturar-dialog.component';
+import { MarcharDialogComponent } from './components/marchar-dialog/marchar-dialog.component';
 import { ItemPedido, Comensal, Producto } from './models/mesa-pedido.model';
 
 @Component({
   selector: 'app-mesa',
   standalone: true,
-  imports: [PosHeaderComponent, PedidoListComponent, CartaCatalogoComponent, ComensalesDialogComponent, ItemDialogComponent, MozoDialogComponent, ClienteDialogComponent, DescuentoDialogComponent, ObservacionDialogComponent, AnularDialogComponent, TransferenciaDialogComponent, CantidadPadComponent, NuevoArticuloDialogComponent, ControlDialogComponent, CobrarDialogComponent, FacturarDialogComponent],
+  imports: [PedidoListComponent, CartaCatalogoComponent, ComensalesDialogComponent, ItemDialogComponent, MozoDialogComponent, ClienteDialogComponent, DescuentoDialogComponent, ObservacionDialogComponent, AnularDialogComponent, TransferenciaDialogComponent, CantidadPadComponent, NuevoArticuloDialogComponent, ControlDialogComponent, CobrarDialogComponent, MarcharDialogComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mesa-view">
-      <app-pos-header (cerrarTurno)="goBack()" />
-
       <!-- Main content -->
-      <div class="mesa-view__body">
-        <div class="mesa-view__pedido">
+      <div class="mesa-view__body" #body>
+        <div class="mesa-view__pedido" [style.width.px]="pedidoWidth()">
           <!-- Mesa info bar -->
           <div class="mesa-view__mesa-bar">
             <div class="mesa-view__left">
@@ -64,8 +61,14 @@ import { ItemPedido, Comensal, Producto } from './models/mesa-pedido.model';
             (openDescuento)="showDescuentoDialog.set(true)"
             (openControl)="showControlDialog.set(true)"
             (openCobrar)="showCobrarDialog.set(true)"
-            (openFacturar)="showFacturarDialog.set(true)"
+            (facturar)="onFacturar($event)"
           />
+        </div>
+        <div class="mesa-view__resizer"
+             [class.mesa-view__resizer--dragging]="isResizing()"
+             (mousedown)="onResizeStart($event)"
+             title="Arrastrar para redimensionar">
+          <span class="mesa-view__resizer-grip"></span>
         </div>
         <div class="mesa-view__carta">
           <app-carta-catalogo
@@ -79,6 +82,7 @@ import { ItemPedido, Comensal, Producto } from './models/mesa-pedido.model';
 
     @if (showComensalesDialog()) {
       <app-comensales-dialog
+        [showObservaciones]="false"
         (confirmar)="onEditComensales($event)"
         (cancelar)="showComensalesDialog.set(false)"
       />
@@ -125,12 +129,25 @@ import { ItemPedido, Comensal, Producto } from './models/mesa-pedido.model';
     }
 
     @if (showCobrarDialog()) {
-      <app-cobrar-dialog [total]="totalPedido()" (confirmar)="showCobrarDialog.set(false)" (cancelar)="showCobrarDialog.set(false)" />
+      <app-cobrar-dialog
+        [total]="totalPedido()"
+        [pedidoLabel]="(modoPedido() ? 'Pedido' : 'Mesa') + ' ' + mesaNumero()"
+        (confirmar)="showCobrarDialog.set(false)"
+        (cancelar)="showCobrarDialog.set(false)"
+      />
     }
 
-    @if (showFacturarDialog()) {
-      <app-facturar-dialog (confirmar)="showFacturarDialog.set(false)" (cancelar)="showFacturarDialog.set(false)" />
+    @if (showMarcharDialog()) {
+      <app-marchar-dialog
+        [items]="itemsParaMarchar()"
+        [mesaLabel]="(modoPedido() ? 'Pedido' : 'Mesa') + ' ' + mesaNumero()"
+        [mozoLabel]="mozoLabel()"
+        [pedidoLabel]="'Pedido #' + mesaNumero()"
+        (confirmar)="onMarcharConfirm($event)"
+        (cancelar)="showMarcharDialog.set(false)"
+      />
     }
+
   `,
   styles: [`
     .mesa-view {
@@ -150,12 +167,39 @@ import { ItemPedido, Comensal, Producto } from './models/mesa-pedido.model';
       overflow: hidden;
     }
     .mesa-view__pedido {
-      width: 420px;
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
       background: #F1F5F9;
-      border-right: 1px solid #CBD5E1;
+      min-width: 420px;
+    }
+    .mesa-view__resizer {
+      width: 6px;
+      flex-shrink: 0;
+      background: #CBD5E1;
+      cursor: col-resize;
+      position: relative;
+      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+    }
+    .mesa-view__resizer:hover,
+    .mesa-view__resizer--dragging {
+      background: #F27920;
+    }
+    .mesa-view__resizer-grip {
+      width: 2px;
+      height: 32px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 1px;
+      pointer-events: none;
+      transition: background 0.15s;
+    }
+    .mesa-view__resizer:hover .mesa-view__resizer-grip,
+    .mesa-view__resizer--dragging .mesa-view__resizer-grip {
+      background: rgba(255, 255, 255, 0.95);
     }
 
     /* Mesa info bar (cinta dark arriba del panel pedido) */
@@ -211,9 +255,16 @@ import { ItemPedido, Comensal, Producto } from './models/mesa-pedido.model';
     }
   `],
 })
-export class MesaComponent implements OnInit {
+export class MesaComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  readonly bodyRef = viewChild<ElementRef<HTMLElement>>('body');
+
+  readonly pedidoMinWidth = 420;
+  readonly pedidoWidth = signal(420);
+  readonly isResizing = signal(false);
+  private mouseMoveHandler?: (e: MouseEvent) => void;
+  private mouseUpHandler?: () => void;
 
   readonly mesaNumero = signal(1);
   readonly modoPedido = signal(false);
@@ -233,7 +284,8 @@ export class MesaComponent implements OnInit {
   readonly showNuevoArticulo = signal(false);
   readonly showControlDialog = signal(false);
   readonly showCobrarDialog = signal(false);
-  readonly showFacturarDialog = signal(false);
+  readonly showMarcharDialog = signal(false);
+  readonly mozoLabel = signal('Sin asignar');
 
   readonly totalPedido = computed(() =>
     this.items().reduce((sum, i) => sum + i.subtotal, 0)
@@ -266,14 +318,16 @@ export class MesaComponent implements OnInit {
     this.horaActual.set(now.toTimeString().slice(0, 5));
   }
 
-  onProductoClick(producto: Producto): void {
+  onProductoClick(event: { producto: Producto; cantidad: number }): void {
+    const { producto, cantidad } = event;
+    const qty = Math.max(1, Math.floor(cantidad || 1));
     const existing = this.items().find(
       i => i.productoId === producto.id && i.comensalIndex === 0 && !i.enviado
     );
     if (existing) {
       this.items.update(items =>
         items.map(i => i.id === existing.id
-          ? { ...i, cantidad: i.cantidad + 1, subtotal: (i.cantidad + 1) * i.precioUnitario }
+          ? { ...i, cantidad: i.cantidad + qty, subtotal: (i.cantidad + qty) * i.precioUnitario }
           : i
         )
       );
@@ -284,9 +338,9 @@ export class MesaComponent implements OnInit {
           id: `item-${++this.itemCounter}`,
           productoId: producto.id,
           nombre: producto.nombre,
-          cantidad: 1,
+          cantidad: qty,
           precioUnitario: producto.precio,
-          subtotal: producto.precio,
+          subtotal: producto.precio * qty,
           comensalIndex: 0,
           enviado: false,
         },
@@ -294,10 +348,10 @@ export class MesaComponent implements OnInit {
     }
   }
 
-  onEditComensales(cantidad: number): void {
+  onEditComensales(result: { cantidad: number; observaciones: string[] }): void {
     this.showComensalesDialog.set(false);
     const comensales: Comensal[] = [];
-    for (let i = 0; i < cantidad; i++) {
+    for (let i = 0; i < result.cantidad; i++) {
       comensales.push({ index: i, nombre: `Comensal ${i + 1}` });
     }
     this.comensales.set(comensales);
@@ -327,13 +381,69 @@ export class MesaComponent implements OnInit {
     );
   }
 
+  readonly itemsParaMarchar = computed(() =>
+    this.items().filter(i => !i.enviado),
+  );
+
   onMarcha(): void {
+    if (this.itemsParaMarchar().length === 0) return;
+    this.showMarcharDialog.set(true);
+  }
+
+  onMarcharConfirm(result: { itemIds: string[]; nota: string }): void {
+    this.showMarcharDialog.set(false);
+    const ids = new Set(result.itemIds);
     this.items.update(items =>
-      items.map(i => ({ ...i, enviado: true }))
+      items.map(i => ids.has(i.id) ? { ...i, enviado: true } : i),
     );
+    if (result.nota) {
+      // TODO: persistir nota para cocina
+      console.log('Nota cocina:', result.nota);
+    }
   }
 
   goBack(): void {
     this.router.navigate(['/salon']);
+  }
+
+  onFacturar(tipo: 'factura-a' | 'factura-b' | 'ticket'): void {
+    // TODO: integrar con servicio de facturación
+    console.log('Facturar', tipo);
+  }
+
+  onResizeStart(event: MouseEvent): void {
+    event.preventDefault();
+    const body = this.bodyRef()?.nativeElement;
+    if (!body) return;
+
+    const bodyRect = body.getBoundingClientRect();
+    this.isResizing.set(true);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    this.mouseMoveHandler = (e: MouseEvent) => {
+      const newWidth = e.clientX - bodyRect.left;
+      const maxWidth = bodyRect.width - 320; // catálogo min 320px
+      const clamped = Math.max(this.pedidoMinWidth, Math.min(newWidth, maxWidth));
+      this.pedidoWidth.set(clamped);
+    };
+    this.mouseUpHandler = () => this.onResizeEnd();
+
+    document.addEventListener('mousemove', this.mouseMoveHandler);
+    document.addEventListener('mouseup', this.mouseUpHandler);
+  }
+
+  private onResizeEnd(): void {
+    this.isResizing.set(false);
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    if (this.mouseMoveHandler) document.removeEventListener('mousemove', this.mouseMoveHandler);
+    if (this.mouseUpHandler) document.removeEventListener('mouseup', this.mouseUpHandler);
+    this.mouseMoveHandler = undefined;
+    this.mouseUpHandler = undefined;
+  }
+
+  ngOnDestroy(): void {
+    this.onResizeEnd();
   }
 }

@@ -26,19 +26,19 @@ import { PosHeaderComponent } from '../salon/components/pos-header/pos-header.co
         <!-- Footer totals -->
         <div class="caja-footer">
           <div class="total-pill total-pill--green">
-            <span class="total-pill__label">Aporte</span>
+            <span class="total-pill__label">Ingresos</span>
             <span class="total-pill__icon">💵</span>
-            <span class="total-pill__value">44 UDS</span>
+            <span class="total-pill__value">\${{ 185500 | number:'1.0-0' }}</span>
           </div>
           <div class="total-pill total-pill--red">
-            <span class="total-pill__label">Retiro</span>
+            <span class="total-pill__label">Egresos</span>
             <span class="total-pill__icon">📤</span>
-            <span class="total-pill__value">0 UDS</span>
+            <span class="total-pill__value">\${{ 0 | number:'1.0-0' }}</span>
           </div>
           <div class="total-pill total-pill--orange">
             <span class="total-pill__label">Saldo</span>
             <span class="total-pill__icon">💰</span>
-            <span class="total-pill__value">44 UDS</span>
+            <span class="total-pill__value">\${{ 185500 | number:'1.0-0' }}</span>
           </div>
           <button class="cerrar-caja-btn" (click)="showCerrarDialog.set(true)">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -82,7 +82,7 @@ import { PosHeaderComponent } from '../salon/components/pos-header/pos-header.co
             </div>
             @if (egresos().length === 0) {
               <div class="caja-col__list caja-col__list--empty">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="1.5">
                   <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/>
                 </svg>
                 <span class="empty-text">No hay egresos a mostrar</span>
@@ -156,7 +156,7 @@ import { PosHeaderComponent } from '../salon/components/pos-header/pos-header.co
             Recuento caja
           </button>
           <span class="dialog__saldo-label">Saldo recaudado</span>
-          <span class="dialog__saldo">\$255.000.000</span>
+          <span class="dialog__saldo">\${{ 185500 | number:'1.0-0' }}</span>
           <div class="dialog__footer">
             <button class="btn btn--cancel" (click)="showCerrarDialog.set(false)">Cancelar</button>
             <button class="btn btn--confirm" (click)="showCerrarDialog.set(false)">Aceptar</button>
@@ -166,31 +166,32 @@ import { PosHeaderComponent } from '../salon/components/pos-header/pos-header.co
     }
   `,
   styles: [`
-    .page { display: flex; flex-direction: column; height: 100vh; height: 100dvh; background: #01033E; overflow: hidden; }
+    .page { display: flex; flex-direction: column; height: 100vh; height: 100dvh; background: #F8FAFC; overflow: hidden; }
     .page__content { flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
     .page__header { display: flex; align-items: center; gap: 12px; }
-    .back-btn { background: none; border: none; color: rgba(255,255,255,0.6); cursor: pointer; padding: 4px; border-radius: 6px; display: flex; }
-    .back-btn:hover { color: #fff; }
-    .page__title { font-size: 18px; font-weight: 700; color: #fff; margin: 0; }
-    .page__subtitle { font-size: 12px; color: rgba(255,255,255,0.4); margin: 0; }
+    .back-btn { background: none; border: none; color: #6B7280; cursor: pointer; padding: 4px; border-radius: 6px; display: flex; }
+    .back-btn:hover { color: #1a1a1a; }
+    .page__title { font-size: 18px; font-weight: 700; color: #1a1a1a; margin: 0; }
+    .page__subtitle { font-size: 12px; color: #6B7280; margin: 0; }
 
     /* Columns */
     .caja-columns { display: flex; gap: 16px; flex: 1; min-height: 0; }
-    .caja-col { flex: 1; display: flex; flex-direction: column; background: #0A0E4A; border-radius: 12px; border: 1px solid #374151; overflow: hidden; }
-    .caja-col__header { display: flex; align-items: center; gap: 8px; padding: 12px 16px; }
+    .caja-col { flex: 1; display: flex; flex-direction: column; background: #fff; border-radius: 12px; border: 1px solid #E5E7EB; overflow: hidden; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04); }
+    .caja-col__header { display: flex; align-items: center; gap: 8px; padding: 14px 16px; border-bottom: 1px solid #F1F5F9; }
     .caja-col__dot { width: 10px; height: 10px; border-radius: 50%; }
     .caja-col__dot--green { background: #10B981; }
     .caja-col__dot--red { background: #EF4444; }
-    .caja-col__title { font-size: 12px; font-weight: 700; color: #fff; letter-spacing: 0.5px; }
-    .caja-col__count { font-size: 11px; color: rgba(255,255,255,0.35); margin-left: auto; }
-    .caja-col__list { flex: 1; padding: 8px 0; overflow-y: auto; }
+    .caja-col__title { font-size: 12px; font-weight: 700; color: #1a1a1a; letter-spacing: 0.5px; }
+    .caja-col__count { font-size: 11px; color: #9CA3AF; margin-left: auto; }
+    .caja-col__list { flex: 1; padding: 4px 0; overflow-y: auto; }
     .caja-col__list--empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 32px; }
-    .empty-text { font-size: 13px; color: rgba(255,255,255,0.3); }
-    .empty-sub { font-size: 11px; color: rgba(255,255,255,0.15); }
-    .mov-row { display: flex; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .mov-row__desc { font-size: 13px; color: rgba(255,255,255,0.7); }
+    .empty-text { font-size: 13px; color: #9CA3AF; }
+    .empty-sub { font-size: 11px; color: #D1D5DB; }
+    .mov-row { display: flex; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #F3F4F6; }
+    .mov-row:last-child { border-bottom: none; }
+    .mov-row__desc { font-size: 13px; color: #374151; }
     .mov-row__monto { font-size: 13px; font-weight: 700; }
-    .mov-row__monto--green { color: #10B981; }
+    .mov-row__monto--green { color: #059669; }
     .caja-col__add-btn {
       display: flex; align-items: center; gap: 5px; margin-left: auto; padding: 6px 14px;
       border-radius: 8px; border: none; font-size: 11px; font-weight: 600; color: #fff;
@@ -230,15 +231,21 @@ import { PosHeaderComponent } from '../salon/components/pos-header/pos-header.co
 
     /* Footer */
     .caja-footer { display: flex; gap: 12px; align-items: stretch; flex-shrink: 0; }
-    .total-pill { flex: 1; display: flex; align-items: center; gap: 10px; padding: 24px 20px; border-radius: 12px; }
-    .total-pill--green { background: #065F46; }
-    .total-pill--red { background: #7F1D1D; }
-    .total-pill--orange { background: #78350F; }
-    .total-pill__label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.6); text-transform: uppercase; }
+    .total-pill { flex: 1; display: flex; align-items: center; gap: 10px; padding: 22px 20px; border-radius: 12px; border: 1px solid; }
+    .total-pill--green { background: #ECFDF5; border-color: #A7F3D0; }
+    .total-pill--green .total-pill__label { color: #047857; }
+    .total-pill--green .total-pill__value { color: #065F46; }
+    .total-pill--red { background: #FEF2F2; border-color: #FECACA; }
+    .total-pill--red .total-pill__label { color: #B91C1C; }
+    .total-pill--red .total-pill__value { color: #7F1D1D; }
+    .total-pill--orange { background: #FFF7ED; border-color: #FED7AA; }
+    .total-pill--orange .total-pill__label { color: #C2410C; }
+    .total-pill--orange .total-pill__value { color: #7C2D12; }
+    .total-pill__label { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
     .total-pill__icon { font-size: 20px; }
-    .total-pill__value { font-size: 16px; font-weight: 800; color: #fff; margin-left: auto; }
+    .total-pill__value { font-size: 16px; font-weight: 800; margin-left: auto; }
     .cerrar-caja-btn {
-      display: flex; align-items: center; gap: 8px; padding: 24px 24px; border-radius: 12px;
+      display: flex; align-items: center; gap: 8px; padding: 22px 24px; border-radius: 12px;
       border: 1.5px solid #FDE68A; background: #FFFBEB; color: #92400E; font-size: 12px;
       font-weight: 700; cursor: pointer; font-family: inherit; letter-spacing: 0.5px;
     }

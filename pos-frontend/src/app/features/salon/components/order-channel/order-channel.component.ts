@@ -68,14 +68,17 @@ import { CanalVenta, PedidoCanal } from '../../models/salon.model';
         <div class="channel__pedidos">
           @for (pedido of canal().pedidos; track pedido.id) {
             <button class="pedido-row" (click)="pedidoClick.emit(pedido)">
-              <div class="pedido-row__left">
-                <span class="pedido-row__numero">{{ pedido.numero }}</span>
+              <span class="pedido-row__numero">{{ pedido.numero }}</span>
+              <div class="pedido-row__info">
                 @if (pedido.minutosDesdeCreacion > 45) {
                   <span class="pedido-row__estado pedido-row__estado--urgente">Urgente</span>
                 } @else if (pedido.minutosDesdeCreacion > 25) {
                   <span class="pedido-row__estado pedido-row__estado--demorado">Demorado</span>
                 } @else {
                   <span class="pedido-row__estado pedido-row__estado--normal">Normal</span>
+                }
+                @if (pedido.cliente) {
+                  <span class="pedido-row__cliente">{{ pedido.cliente }}</span>
                 }
               </div>
               <span class="pedido-row__monto">\${{ pedido.monto | number:'1.0-0' }}</span>
@@ -208,7 +211,7 @@ import { CanalVenta, PedidoCanal } from '../../models/salon.model';
     .pedido-row {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 10px;
       padding: 18px 18px 18px 28px;
       border: none;
       background: none;
@@ -223,10 +226,22 @@ import { CanalVenta, PedidoCanal } from '../../models/salon.model';
     .pedido-row + .pedido-row {
       border-top: 1px solid #F7F7F7;
     }
-    .pedido-row__left {
+    .pedido-row__info {
       display: flex;
-      align-items: center;
-      gap: 10px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 7px;
+      min-width: 0;
+    }
+    .pedido-row__cliente {
+      font-size: 12px;
+      color: #6B7280;
+      font-weight: 500;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 140px;
     }
     .pedido-row__dot {
       width: 8px;
@@ -237,6 +252,7 @@ import { CanalVenta, PedidoCanal } from '../../models/salon.model';
       font-size: 15px;
       font-weight: 600;
       color: #374151;
+      flex-shrink: 0;
     }
     .pedido-row__estado {
       font-size: 10px;

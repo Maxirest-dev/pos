@@ -31,7 +31,7 @@ import { MOCK_CATEGORIAS, MOCK_SUBCATEGORIAS, MOCK_PRODUCTOS } from '../../data/
             <h4 class="carta__grupo-titulo">{{ sub.nombre }}</h4>
             <div class="carta__grid">
               @for (prod of productosPorSub(sub.id); track prod.id) {
-                <button class="prod-card" (click)="productoClick.emit(prod)">
+                <button class="prod-card" (click)="onProductoClick(prod)">
                   <span class="prod-card__icon">{{ prod.imagen }}</span>
                   <span class="prod-card__nombre">{{ prod.nombre }}</span>
                   <span class="prod-card__precio">\${{ prod.precio | number:'1.0-0' }}</span>
@@ -100,8 +100,10 @@ import { MOCK_CATEGORIAS, MOCK_SUBCATEGORIAS, MOCK_PRODUCTOS } from '../../data/
       display: flex;
       flex-direction: column;
       height: 100%;
-      background: #F5F5F5;
       overflow: hidden;
+      background:
+        url('https://media.istockphoto.com/id/1339378316/cs/fotografie/st%C5%99%C3%ADbrn%C3%A9-pozad%C3%AD-s-kovovou-texturou-st%C5%99%C3%ADbrn%C3%BD-materi%C3%A1l-d%C3%ADky-kter%C3%A9mu-se-budete-c%C3%ADtit-z.jpg?s=612x612&w=0&k=20&c=8GNZkbSADhVwSUZCdp9CknoN2OLPnVed6TwpmBFuYH4=') center/cover no-repeat,
+        linear-gradient(180deg, #D8DCE3 0%, #C8CCD4 50%, #D2D6DD 100%);
     }
 
     /* Categorías scroll horizontal */
@@ -111,8 +113,9 @@ import { MOCK_CATEGORIAS, MOCK_SUBCATEGORIAS, MOCK_PRODUCTOS } from '../../data/
       padding: 12px 14px;
       overflow-x: auto;
       flex-shrink: 0;
-      border-bottom: 1px solid #E5E7EB;
-      background: #fff;
+      background: transparent;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
     }
     .cat-btn {
       display: flex;
@@ -121,16 +124,18 @@ import { MOCK_CATEGORIAS, MOCK_SUBCATEGORIAS, MOCK_PRODUCTOS } from '../../data/
       gap: 6px;
       padding: 12px 16px;
       border-radius: 14px;
-      border: 1.5px solid #E5E7EB;
+      border: 1px solid rgba(0, 0, 0, 0.06);
       background: #fff;
       cursor: pointer;
       font-family: inherit;
-      transition: border-color 0.15s, background 0.15s;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+      transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
       flex-shrink: 0;
       min-width: 85px;
     }
     .cat-btn:hover {
       border-color: #F27920;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
     .cat-btn--active {
       border-color: #F27920;
@@ -158,10 +163,11 @@ import { MOCK_CATEGORIAS, MOCK_SUBCATEGORIAS, MOCK_PRODUCTOS } from '../../data/
     .carta__grupo-titulo {
       font-size: 11px;
       font-weight: 700;
-      color: #9CA3AF;
+      color: #fff;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       margin: 0 0 8px 0;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
     }
     .carta__grid {
       display: flex;
@@ -175,16 +181,17 @@ import { MOCK_CATEGORIAS, MOCK_SUBCATEGORIAS, MOCK_PRODUCTOS } from '../../data/
       gap: 4px;
       padding: 10px 8px;
       border-radius: 10px;
-      border: 1px solid #E5E7EB;
+      border: 1px solid rgba(0, 0, 0, 0.06);
       background: #fff;
       cursor: pointer;
       font-family: inherit;
       width: 100px;
-      transition: border-color 0.15s, box-shadow 0.15s;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+      transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
     }
     .prod-card:hover {
       border-color: #F27920;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
     .prod-card:active {
       transform: scale(0.97);
@@ -213,8 +220,9 @@ import { MOCK_CATEGORIAS, MOCK_SUBCATEGORIAS, MOCK_PRODUCTOS } from '../../data/
       align-items: center;
       justify-content: space-between;
       padding: 10px 14px;
-      border-top: 1px solid #E5E7EB;
-      background: #fff;
+      border-top: 1px solid rgba(0, 0, 0, 0.12);
+      box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.25);
+      background: transparent;
       flex-shrink: 0;
       gap: 10px;
     }
@@ -222,7 +230,7 @@ import { MOCK_CATEGORIAS, MOCK_SUBCATEGORIAS, MOCK_PRODUCTOS } from '../../data/
       width: 42px;
       height: 42px;
       border-radius: 10px;
-      border: 1.5px solid #E5E7EB;
+      border: 1px solid rgba(0, 0, 0, 0.06);
       background: #fff;
       color: #6B7280;
       display: flex;
@@ -231,11 +239,13 @@ import { MOCK_CATEGORIAS, MOCK_SUBCATEGORIAS, MOCK_PRODUCTOS } from '../../data/
       cursor: pointer;
       font-family: inherit;
       flex-shrink: 0;
-      transition: border-color 0.15s, background 0.15s;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+      transition: border-color 0.15s, background 0.15s, box-shadow 0.15s, color 0.15s;
     }
     .carta__footer-btn:hover {
       border-color: #F27920;
       color: #F27920;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
     .carta__qty-wrap {
       position: relative;
@@ -358,7 +368,7 @@ import { MOCK_CATEGORIAS, MOCK_SUBCATEGORIAS, MOCK_PRODUCTOS } from '../../data/
   `],
 })
 export class CartaCatalogoComponent {
-  productoClick = output<Producto>();
+  productoClick = output<{ producto: Producto; cantidad: number }>();
   openCantidadPad = output<void>();
   openNuevoArticulo = output<void>();
 
@@ -394,6 +404,13 @@ export class CartaCatalogoComponent {
         this.padDisplay.set(v + key);
       }
     }
+  }
+
+  onProductoClick(prod: Producto): void {
+    this.productoClick.emit({ producto: prod, cantidad: this.cantidadNext() });
+    this.cantidadNext.set(1);
+    this.padDisplay.set('1');
+    this.showPad.set(false);
   }
 
   readonly subcategoriasFiltradas = computed(() =>

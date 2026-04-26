@@ -8,7 +8,6 @@ import { Component, output, ChangeDetectionStrategy } from '@angular/core';
     <div class="backdrop" (click)="cancelar.emit()">
       <div class="dialog" (click)="$event.stopPropagation()">
         <div class="dialog__header">
-          <span class="dialog__icon">🍽️</span>
           <div>
             <h3 class="dialog__title">Nuevo Artículo</h3>
             <p class="dialog__subtitle">Agregar un artículo o pedido</p>

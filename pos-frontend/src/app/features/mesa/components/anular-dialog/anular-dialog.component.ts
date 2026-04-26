@@ -8,7 +8,6 @@ import { Component, input, output, ChangeDetectionStrategy } from '@angular/core
     <div class="backdrop" (click)="cancelar.emit()">
       <div class="dialog" (click)="$event.stopPropagation()">
         <div class="dialog__header">
-          <span class="dialog__icon">🚫</span>
           <h3 class="dialog__title">Anular</h3>
         </div>
         <p class="dialog__msg">Vas a Anular el artículo <strong>{{ itemNombre() }}</strong> de la mesa. ¿Querés continuar?</p>
