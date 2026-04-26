@@ -64,11 +64,12 @@ Organización: [Maxirest-dev](https://github.com/Maxirest-dev)
 
 ## 📝 Últimos cambios
 
-### 2026-04-22
+### 2026-04-26
 
 **Commits incluidos:**
-- e58e638 feat: rediseño salón/mesa, swap canal-plano drag&drop, edición in-place
+- 6c308b1 feat: rediseño integral del POS — login, salón, in-mesa, dashboard, caja, historial y header
 
 **Archivos modificados:**
-  - `.json`: angular.json
-  - `.ts`: mock-users.data.ts, pin-entry.component.ts, cliente-dialog.component.ts, pedido-list.component.ts, mesa.component.ts, active-orders.component.ts, channel-main.component.ts, mesa-card.component.ts, mesa-grid.component.ts, order-channel.component.ts, plano-item.component.ts, pos-header.component.ts, salon-reduced.component.ts, mock-salon.data.ts, salon.model.ts, salon.component.ts, salon-layout.service.ts, session-plano.service.ts, pin-input.component.ts
+  - `.md`: README.md
+  - `.json`: package-lock.json, package.json
+  - `.ts`: caja.component.ts, estadisticas.component.ts, historial.component.ts, shift-confirmation.component.ts, user-selector.component.ts, anular-dialog.component.ts, carta-catalogo.component.ts, cliente-dialog.component.ts, cobrar-dialog.component.ts, comensales-dialog.component.ts, descuento-dialog.component.ts, facturar-dialog.component.ts, marchar-dialog.component.ts, mozo-dialog.component.ts, nuevo-articulo-dialog.component.ts, observacion-dialog.component.ts, pedido-list.component.ts, transferencia-dialog.component.ts, mesa.component.ts, cerrar-turno-dialog.component.ts, channel-main.component.ts, order-channel.component.ts, pos-header.component.ts, mock-salon.data.ts, salon.model.ts, salon.component.ts, avatar-card.component.ts
