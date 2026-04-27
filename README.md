@@ -64,12 +64,10 @@ Organización: [Maxirest-dev](https://github.com/Maxirest-dev)
 
 ## 📝 Últimos cambios
 
-### 2026-04-26
+### 2026-04-27
 
 **Commits incluidos:**
-- 6c308b1 feat: rediseño integral del POS — login, salón, in-mesa, dashboard, caja, historial y header
+- (sin commits pendientes)
 
 **Archivos modificados:**
   - `.md`: README.md
-  - `.json`: package-lock.json, package.json
-  - `.ts`: caja.component.ts, estadisticas.component.ts, historial.component.ts, shift-confirmation.component.ts, user-selector.component.ts, anular-dialog.component.ts, carta-catalogo.component.ts, cliente-dialog.component.ts, cobrar-dialog.component.ts, comensales-dialog.component.ts, descuento-dialog.component.ts, facturar-dialog.component.ts, marchar-dialog.component.ts, mozo-dialog.component.ts, nuevo-articulo-dialog.component.ts, observacion-dialog.component.ts, pedido-list.component.ts, transferencia-dialog.component.ts, mesa.component.ts, cerrar-turno-dialog.component.ts, channel-main.component.ts, order-channel.component.ts, pos-header.component.ts, mock-salon.data.ts, salon.model.ts, salon.component.ts, avatar-card.component.ts
